@@ -1,0 +1,141 @@
+package edu.bu.metcs622.main;
+
+
+//import java.io.IOException;
+//import java.sql.SQLException;
+//import java.text.ParseException;
+//
+//import javax.xml.parsers.ParserConfigurationException;
+//import javax.xml.transform.TransformerConfigurationException;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestMethod;
+//import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+//import org.springframework.web.bind.annotation.RestController;
+//import org.xml.sax.SAXException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import edu.bu.metcs622.handleRequests.RequestHandler;
+import edu.bu.metcs622.handleRequests.SearchParams;
+import edu.bu.metcs622.scandata.Engine;
+
+
+// RUN USING mvn spring-boot:run ON COMMAND LINE
+@SpringBootApplication
+@Controller
+public class PubMedPal {
+	Engine engine;
+	GsonBuilder builder = new GsonBuilder();  // initialize and create gson builder for forming and parsing json
+	Gson gson = builder.create();
+
+	public static void main(String[] args) {
+		SpringApplication.run(PubMedPal.class, args);
+	}
+	
+	// server running check route
+	@GetMapping("/ping")
+	public String hello() {
+		return String.format("%s!", "pong");
+		
+	}
+	
+	// displays main page
+	@GetMapping({"/", "/index.html"})
+	public String index() {
+		System.out.println("PubMed Pal launched!");
+		return "index";
+	}
+	
+	
+	/**
+	 * Determines whether user request is valid / is for search history
+	 * @param userRequest
+	 * @return json response to send to bot
+	 */
+	@PostMapping("/api/parse")
+	@ResponseBody
+		public String parseMessage(@RequestBody String userRequest) {
+			System.out.println(userRequest);
+			String response = RequestHandler.parseRequest(engine, userRequest);  // parse term and dates from request
+			System.out.println(response);
+			return response;
+		}
+	
+	/**
+	 * Directs search using specifed method and parameters and returns result if found
+	 * @param userRequest
+	 * @return json response with search results for bot
+	 */
+	@PostMapping("/api/search")
+	@ResponseBody
+		public String performSearch(@RequestBody String userRequest) {
+			System.out.println("71: " + userRequest);
+			SearchParams searchParams = gson.fromJson(userRequest, SearchParams.class);  // pull params generated from parseRequest and method 
+			System.out.println("73: " + searchParams);
+			
+			// perform search
+			String response = RequestHandler.getRequestResult(
+					engine, searchParams.getMethod(),searchParams.getTerm(),searchParams.getStartDate(), searchParams.getEndDate(), searchParams.getGetCount());
+			//System.out.println(response);
+			return response;
+		}
+	
+	/**
+	 * Takes files user specified and builds and runs the engine
+	 * @param files
+	 * @return "response"
+	 */
+	@PostMapping("/api/initialize")
+	@ResponseBody
+		public String buildDataStores(@RequestBody String files) {
+			engine = new Engine();
+			
+			try {
+				engine.start(files);
+			} catch (Exception e) {
+				engine.getLogger().writeToErrorLog(e.toString());
+				e.printStackTrace();
+			} 
+			return "response";
+	}
+	
+	/**
+	 * Closes connection to SQL database, lucene index, and log files
+	 */
+	@GetMapping("/api/close")
+		public void closeResources() {
+			System.out.println("Closing resources");
+			try {
+				engine.getMysql().closeSQLDatabase();
+			} catch (Exception e){
+				;
+			}
+			try {
+				engine.getLucene().closeIndexWriter();
+			} catch (Exception e){
+				;
+			}
+			try {
+				engine.getLogger().closeErrorLog();
+			} catch (Exception e){
+				;
+			}
+			try {
+				engine.getLogger().closeSearchLog();
+			} catch (Exception e){
+				;
+			}
+	}
+	
+	
+
+}

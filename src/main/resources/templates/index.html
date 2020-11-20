@@ -1,0 +1,500 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>PubMed Pal</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <!--Favicon block-->
+    <link rel="apple-touch-icon" sizes="180x180" href="/src/main/resources/static/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://pubmedpal.s3.us-east-2.amazonaws.com/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://pubmedpal.s3.us-east-2.amazonaws.com/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="https://pubmedpal.s3.us-east-2.amazonaws.com/favicon.ico">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="https://unpkg.com/botui/build/botui.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/botui/build/botui-theme-default.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .botui-container{
+            margin-bottom: 80px;
+        }
+        .botui-message-content {
+            background-color: green;
+            color: white;
+            /* new code below */
+            max-height: 117px;
+            overflow: hidden;
+        }
+        .botui-message-content.loading {
+            background-color: rgb(0, 128, 0);
+        }
+        .botui-message span {
+            overflow-wrap: break-word;
+        }
+        button.botui-actions-buttons-button {
+            background-color: lightgreen;
+            color: darkslategray;
+        }
+        button#send-files {
+            display: block;
+            margin: auto;
+            margin-top: 50px;
+            width: 50px;
+            height: 25px;
+        }
+        #file-select{
+            width: 55%;
+        }
+        #file-selector{
+            z-index: 120;
+            width: 40vw;
+            height: 30vh;
+            background-color: whitesmoke;
+            position: absolute;
+            top: 30vh;
+            left: 30vw;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        #file-selector[loading="true"]:hover{
+            cursor: wait;
+        }
+
+        #file-selector[loading="true"] *:hover{
+            cursor: wait;
+        }
+
+        body[loading="true"]:hover{
+            cursor: wait;
+        }
+
+        body[loading="true"] *:hover{
+            cursor: wait;
+        }
+
+        #file-selector p{
+            margin-bottom: 20px;
+            font-family: arial, sans-serif;
+            font-weight: bold;
+        }
+        h1{
+            padding-left: 200px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            font-family: arial, sans-serif;
+            background-color: gray;
+            color: white;
+            z-index: 50;
+        }
+        .human.botui-message-content.text {
+            background-color: blue;
+        }
+        #my-botui-app{
+            margin: auto;
+            width: 515px;
+            margin-top: 30px;
+        }
+        #msg-box{
+            width: 100%;
+            display: flex;
+            position: fixed;
+            place-content: center;
+            bottom: 0;
+            padding-bottom: 25px;
+            padding-top: 10px;            
+            padding-top: 10px;
+            border-top: solid 1px gray;
+            background-color: rgb(235,235,235);
+        }
+        /* new selector */
+        .msg-closed {
+            background: linear-gradient(to bottom, 
+                rgba(0,128,0, 1) 60%, 
+                rgba(0,128,0, .8) 80%, 
+                rgba(0,128,0, .6) 95%, 
+                rgba(0,128,0, 0.3) 100% 
+            );
+        }
+
+        /* new selector */
+        .msg-open{
+            background-color: green;
+            overflow: visible;
+            max-height: fit-content;
+        }
+        ol {
+            padding-left: 20px;
+        }
+        option {
+            padding: 2px;
+        }
+        .overlay{
+            width: 100%;
+            height: 101.5vh;
+            background-color: rgba(155,155,155,.75);
+            position: absolute;
+            z-index: 10;
+            top: 0;
+            margin-top: -10px;
+        }
+        #send-btn{
+            padding: 0px 10px;
+            color: rgb(35,35,35);
+        }
+        textarea{
+            width: 450px;
+            font-family: 'Open Sans', sans-serif;
+            padding: 3px;
+            color: rgb(35,35,35);
+            border-right: none;
+            resize: none;
+        }
+        textarea:focus{
+            border:none;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+    
+    <!-- Add jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    
+    
+    <script>
+        $(()=>{ // when document has loaded
+            let botui = new BotUI('my-botui-app');  // initialize bot
+            let messageBox = document.getElementById('message');
+            
+            const ele = $('.botui-messages-container')[0];
+            const config = {childList: true, subtree: true};
+            const callback = function(mutationsList, observer){  // function for when DOM tree changes
+                const newMutation = mutationsList[mutationsList.length-1];   
+                    if (newMutation.type === 'childList'){ // if new child was added
+                        let lastBotMessage = $('.botui-message-content').last(); // get last message from bot
+                            if (!lastBotMessage.hasClass("human")){ // confirm that message was from bot and not human
+                                try {
+                                    if (checkOverflow(lastBotMessage[0])){  // message is bigger than normal box
+                                        lastBotMessage.addClass('msg-closed');  // minimize message
+
+                                        $(lastBotMessage).click(()=>{  // add event listener to message to toggle between open and closed
+                                            if ($(lastBotMessage).hasClass('msg-closed')){
+                                                $(lastBotMessage).addClass('msg-open');
+                                                $(lastBotMessage).removeClass('msg-closed');
+                                            } else if ($(lastBotMessage).hasClass('msg-open')){
+                                                $(lastBotMessage).addClass('msg-closed');
+                                                $(lastBotMessage).removeClass('msg-open');
+                                            }
+                                        });
+                                        
+                                    }
+                                } catch {
+                                    ;
+                                }
+                            }
+                        }
+            }
+                    
+                const observer = new MutationObserver(callback);  // create Mutation observer to listen for changes to DOM
+                observer.observe(ele, config); // start MutationObserver
+                                
+
+            function startBot(){ 
+                botui.message.bot({  // show greeting message
+                    content: 'Hello there!',
+                    delay: 1000
+                }).then(()=>{ // after message is shown
+                    botui.message.bot({ // show next message
+                        content: 'How can I help you?',
+                        delay: 1500
+                    });
+                });
+                $('#message').focus();
+            }
+
+            $('#send-btn').click(()=>{
+                if (messageBox.value != ""){ // do nothing if message is empty
+                    let method = 0;
+                    let searchRequest = messageBox.value;
+                    botui.message.human({  // show message
+                        content: messageBox.value
+                    }).then(()=>{   // handle message
+                        if (searchRequest.toLowerCase().includes("thank you") || searchRequest.toLowerCase().includes("thanks") ){
+                            messageBox.value = "";
+                            botui.message.bot({
+                                content: "You're welcome!"
+                                // TODO: ask if they need anything else?
+                            });
+                        } else {                 
+                            sendParseRequestToServer(searchRequest);  // figure out what message means
+                        }
+                        
+                    });
+                }
+            });
+
+            function sendParseRequestToServer(searchRequest){
+                botui.message.bot({
+                    loading: true,
+                    type: 'html',
+                }).then((index)=>{
+                    // send message to server
+                    let body = { "requestText": searchRequest};
+                    messageBox.value = "";
+                    $.ajax({
+                        url: '/api/parse', 
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: body,
+                        success: function(data, textStatus, jqXHR){ 
+                            console.log(data);
+                            console.log(textStatus);
+                            data = JSON.parse(data);
+
+                            // have request type - handle or send actual request
+                            if (data.requestType === "undefined"){ // can't tell what request is
+                                botui.message.update(index, {
+                                    loading: false,
+                                    content: "Sorry, I don't understand what you're saying."
+                                });
+                            } else if (data.requestType === "get search history"){
+                                console.log(data.searchHistory);
+                                //data.searchHistory = JSON.parse(data.searchHistory);
+                                console.log(data.searchHistory);
+                                let searchHistory = `Frequencies:<ul>${data.searchHistory.frequencies}</ul>&nbsp;<br/>Descriptions:<ol>${data.searchHistory.descriptions}</ol>`;
+                                botui.message.update(index, {
+                                    loading: false,
+                                    content: searchHistory
+                                });
+                            } else { // actual search request
+                                botui.message.update(index, {
+                                    loading: false,
+                                    content: "How do you want to search?"
+                                }).then((index2)=>{
+                                    botui.action.button({
+                                        delay: 200,
+                                        addMessage: true,
+                                        action: [{
+                                            text: "Brute force",
+                                            value: 1
+                                        },
+                                        {
+                                            text: "Lucene",
+                                            value: 2
+                                        },
+                                        {
+                                            text: "MongoDB",
+                                            value: 3
+                                        },
+                                        {
+                                            text: "MySQL",
+                                            value: 4
+                                        }],
+                                        autoHide: true
+                                    }).then((res)=>{
+                                        method = res.value;
+                                        //botui.message.remove(index2);
+                                        sendSearchRequestToServer(method, data.term, data.startDate, data.endDate, data.getCount); // search
+                                    });                      
+                                });
+                            }
+
+                            
+                        },
+                        error: function(jqXHR, textStatus, errorThrown){ 
+                            console.log("error");
+                            console.log(textStatus);
+                            console.log(errorThrown);
+                        }
+                    });
+                });
+            }
+
+            function sendSearchRequestToServer(method, term, startDate, endDate, getCount){
+                botui.message.bot({
+                    loading: true,
+                    type: 'text',
+                }).then((index)=>{
+                    // send message to server
+                    let body = `{ "method": ${method},
+                        "term": ${term},
+                        "startDate": "${startDate}",
+                        "endDate": "${endDate}",
+                        "getCount": "${getCount}"
+                        }`;
+                    messageBox.value = "";
+                    $.ajax({
+                        url: '/api/search', 
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: body,
+                        success: function(data, textStatus, jqXHR){ 
+                            console.log(data);
+                            console.log(textStatus);  // success
+                            data = JSON.parse(data);
+                            let msgContent;
+                            if (data.results === ""){ // results are empty
+                                msgContent = "Sorry, I couldn't find anything."
+                                botui.message.update(index, {
+                                    loading: false,
+                                    content: msgContent
+                                });
+                            } else {
+                                if (data.getCount === "true"){
+                                    msgContent = `There are ${data.results} articles for ${data.shortSearchDescription}`
+                                        botui.message.update(index, {
+                                        loading: false,
+                                        content: msgContent
+                                    });
+                                } else {
+                                    msgContent = `Here are results for ${data.shortSearchDescription}`
+                                        botui.message.update(index, {
+                                        loading: false,
+                                        content: msgContent
+                                    });
+                                    botui.message.bot({
+                                        content: `<ol>${data.results}</ol>`,
+                                        type: 'html',
+                                    });
+                                }
+                            }
+
+                            $('#message').focus();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown){ 
+                            console.log("error");
+                            console.log(jqXHR);
+                            console.log(textStatus);
+                            console.log(errorThrown);
+                            botui.message.update(index, {
+                                loading: false,
+                                content: "Sorry, something went wrong. Try again later."
+                            });
+                        }
+                    });
+                });
+            }
+
+            $('#send-files').click((event)=>{
+                let numFiles = $('#file-select').val().length;
+                let files = $('#file-select').val();
+
+                if (numFiles === 0){  // no files were selected - do nothing
+                    event.preventDefault();
+                }
+                $('body').attr("loading","true");
+                
+                let filesToOpen = "";
+                for (let i=0; i<numFiles; i++){
+                    if (i > 0){
+                        filesToOpen += ",";
+                    } 
+
+                    filesToOpen += files[i];
+                }
+                // send files to server/database
+                $.ajax({
+                    url: '/api/initialize', 
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: filesToOpen,
+                    success: function(data, textStatus, jqXHR){ 
+                        console.log("success");
+                        console.log(data);
+                        console.log(jqXHR);
+                        console.log(textStatus);
+                        $('#file-selector').hide();
+                        $('.overlay').hide();
+                        $('body').attr("loading","false");
+                        startBot();
+                        
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){ 
+                        // should probably show an error message
+                        console.log("error");
+                        console.log(jqXHR);
+                        console.log(textStatus);
+                        console.log(errorThrown);
+                    }
+                });
+
+            });
+
+            $('#message').on("keydown", (event)=>{ // send message if user hits Enter key
+                if (event.code === "Enter"){
+                 $('#send-btn').click();   
+                }
+            });
+
+            $( window ).on("beforeunload", (event)=>{  // tell server to close resources
+                observer.disconnect();
+                $.ajax({
+                    url: '/api/close', 
+                    type: 'GET',
+                    success: function(data, textStatus, jqXHR){ 
+                        console.log("success");
+                        console.log(data);
+                        console.log(jqXHR);
+                        console.log(textStatus);                        
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){ 
+                        console.log("error");
+                        console.log(jqXHR);
+                        console.log(textStatus);
+                        console.log(errorThrown);
+                    }
+                });
+            });
+        
+            // Determines if the passed element is overflowing its bounds, either vertically or horizontally.
+            // Will temporarily modify the "overflow" style to detect this
+            // if necessary.
+            function checkOverflow(el){
+                let curOverflow = el.style.overflow;
+                
+                if ( !curOverflow || curOverflow === "visible" ){
+                    el.style.overflow = "hidden";
+                }
+                
+                let isOverflowing = el.clientWidth < el.scrollWidth || el.clientHeight < el.scrollHeight;
+                
+                el.style.overflow = curOverflow;
+                
+                return isOverflowing; 
+            }
+        });
+
+    </script>
+</head>
+<body>
+    <div id="file-selector">
+        <p>Choose datasets to use</p>
+        <select multiple id="file-select">
+            <!--add more options if more files are added-->
+            <option value="pubmed20n1020">pubmed20n1020</option>
+            <option value="pubmed20n1032">pubmed20n1032</option>
+            <option value="pubmed20n1151">pubmed20n1151</option>
+            <option value="pubmed20n1169">pubmed20n1169</option>
+            <option value="pubmed20n1408">pubmed20n1408</option>
+        </select>       
+        <button id="send-files">OK</button>
+        </div>
+    <div class="overlay"></div>
+    <h1>PubMed Pal</h1>
+    <div id="my-botui-app">
+        <bot-ui></botui>
+    </div>
+    <div id=msg-box>
+        <textarea autofocus id="message"></textarea><button id="send-btn">Send</button>
+    </div>
+        <script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
+    <script src="https://unpkg.com/botui/build/botui.js"></script>
+</body>
+</html>
