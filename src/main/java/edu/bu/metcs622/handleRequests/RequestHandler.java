@@ -30,6 +30,7 @@ public class RequestHandler {
 		try {
 			lowerRequest = URLDecoder.decode(lowerRequest, "UTF-8");  // decode url (translate special characters)
 		} catch (UnsupportedEncodingException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 		
@@ -77,6 +78,8 @@ public class RequestHandler {
 				termStartIndex = termFinderIndex + 12;
 			} else if ((termFinderIndex = lowerRequest.indexOf("articles on")) >= 0) {
 				termStartIndex = termFinderIndex + 11;
+			} else if ((termFinderIndex = lowerRequest.indexOf("articles for")) >= 0) {
+				termStartIndex = termFinderIndex + 12;
 			} else if ((termFinderIndex = lowerRequest.indexOf("articles about")) >= 0) {
 				termStartIndex = termFinderIndex + 14;
 			} else if ((termFinderIndex = lowerRequest.indexOf("stuff on")) >= 0) {
@@ -93,6 +96,8 @@ public class RequestHandler {
 				termStartIndex = termFinderIndex + 10;
 			} else if ((termFinderIndex = lowerRequest.indexOf("look for")) >= 0) {
 				termStartIndex = termFinderIndex + 8;
+			} else if ((termFinderIndex = lowerRequest.indexOf("show me")) >= 0) {
+				termStartIndex = termFinderIndex + 7;
 			} else if ((termFinderIndex = lowerRequest.indexOf("are there about")) >= 0) {
 				termStartIndex = termFinderIndex + 15;
 			} else if ((termFinderIndex = lowerRequest.indexOf("are there for")) >= 0) {
@@ -156,10 +161,28 @@ public class RequestHandler {
 					if (sDateStartIndex == -1) { // there is no start date yet
 						if ((sDateFinderIndex = lowerRequest.indexOf("after")) >= 0) {
 							sDateStartIndex = sDateFinderIndex + 5;
-							startDate = lowerRequest.substring(sDateStartIndex);
+							startDate = lowerRequest.substring(sDateStartIndex).trim();
+							// start from next year
+							try {
+								int numDate = Integer.parseInt(startDate);
+								numDate++;
+								startDate = new Integer(numDate).toString();
+							} catch (Exception e){
+								e.printStackTrace();
+								engine.getLogger().writeToErrorLog(e.toString());
+							}
 						} if ((eDateFinderIndex = lowerRequest.indexOf("before")) >= 0) {
 							eDateStartIndex = eDateFinderIndex + 6;
-							endDate = lowerRequest.substring(eDateStartIndex);
+							endDate = lowerRequest.substring(eDateStartIndex).trim();
+							// end year before
+							try {
+								int numDate = Integer.parseInt(endDate);
+								numDate--;
+								endDate = new Integer(numDate).toString();
+							} catch (Exception e){
+								e.printStackTrace();
+								engine.getLogger().writeToErrorLog(e.toString());
+							}
 
 						}
 					}

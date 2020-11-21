@@ -1,4 +1,4 @@
-package edu.bu.met622.database;
+package edu.bu.metcs622.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import edu.bu.metcs622.main.Constants;
+import edu.bu.metcs622.scandata.Engine;
 
 
 /**
@@ -15,11 +16,15 @@ import edu.bu.metcs622.main.Constants;
 public class MySQLDBInitializer {
 	private Connection con = null;
 	private Statement stmt;
+	private String tableName = "";
+	private Engine engine;
 
 	/**
 	 * Constructor initializes connection with database
 	 */
-	public MySQLDBInitializer() {
+	public MySQLDBInitializer(Engine engine, String files) {
+		this.engine = engine;
+		this.tableName = files;
 		try {
 			// connect to database with password user supplied
 			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS,Constants.MYSQL_USERNAME,Constants.MYSQL_PWD);
@@ -28,10 +33,11 @@ public class MySQLDBInitializer {
 			stmt = con.createStatement();
 			try {
 				// create table
-				stmt.execute("CREATE TABLE IF NOT EXISTS records (articleTitle VARCHAR(500), abstractText VARCHAR(5000), keywords VARCHAR(1000), "
+				stmt.execute("CREATE TABLE IF NOT EXISTS " + files +" (articleTitle VARCHAR(500), abstractText VARCHAR(5000), keywords VARCHAR(1000), "
 						+ "pubDateString DATE)");
-				stmt.execute("DELETE FROM records");  // clear database	
+				//stmt.execute("DELETE FROM " + files);  // clear database	
 			} catch (SQLException e) {
+				engine.getLogger().writeToErrorLog(e.toString());
 				e.printStackTrace();
 			}
 			
@@ -40,6 +46,34 @@ public class MySQLDBInitializer {
 			System.out.println("Cannot connect to MYSQL. Will proceed with only MongoDB.");
 			
 		}
+	}
+	
+	/**
+	 * Checks for whether a table exists in the MySQL database
+	 * @param tableName
+	 * @return whether table exists in MySQL database
+	 */
+	public boolean checkTableExists(String tableName) {
+		if (con != null) {  // if there is a database connection
+			
+			// search for number of records that match entered keyword
+			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(*) FROM " + tableName);
+			
+				try { 
+					if (sqlResults.next()) {
+						System.out.println("MYSQL ROWS: " + sqlResults.getString(1));
+						if (!sqlResults.getString(1).equals("0")) {
+							return true;
+						}
+					}
+				} catch (SQLException e) {
+					engine.getLogger().writeToErrorLog(e.toString());
+					System.out.println("Sorry, there was a problem with this operation.");
+					return false;
+				}
+		}
+		
+		return false;
 	}
 	
 	public Connection getCon() {
@@ -56,7 +90,7 @@ public class MySQLDBInitializer {
 	public void insertRow(String articleTitle, String abstractText, String keywords, String pubDateString) {
 		try {
 			if (pubDateString.equals("")) {  // if there's no date, don't insert a date
-				stmt.executeUpdate("INSERT INTO records(articleTitle, abstractText, keywords) "
+				stmt.executeUpdate("INSERT INTO " + tableName + "(articleTitle, abstractText, keywords) "
 						+ "VALUES ('" 
 						+ articleTitle 
 						+ "', '" 
@@ -66,7 +100,7 @@ public class MySQLDBInitializer {
 						+ "')");
 			} else { 
 				// there's a date
-				stmt.executeUpdate("INSERT INTO records(articleTitle, abstractText, keywords, pubDateString) "
+				stmt.executeUpdate("INSERT INTO " + tableName + "(articleTitle, abstractText, keywords, pubDateString) "
 						+ "VALUES ('" 
 						+ articleTitle 
 						+ "', '" 
@@ -77,9 +111,11 @@ public class MySQLDBInitializer {
 						+ pubDateString
 						+ "')");
 			}
+
 		} catch (SQLException e) {
 			// likely here because a value was truncated
 			// nothing needs to be done
+			//e.printStackTrace();
 
 		}
 	}
@@ -94,7 +130,7 @@ public class MySQLDBInitializer {
 		String numKeywords = "";
 		if (con != null) {  // if there is a database connection
 			// search for number of records that match entered keyword
-			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM records WHERE articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%'");
+			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM " + tableName + " WHERE articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%'");
 			
 				try { 
 					while(sqlResults.next()) {
@@ -102,6 +138,7 @@ public class MySQLDBInitializer {
 						numKeywords = sqlResults.getString(1);
 					}
 				} catch (SQLException e) {
+					engine.getLogger().writeToErrorLog(e.toString());
 					System.out.println("Sorry, there was a problem with this operation.");
 				}
 		}
@@ -122,7 +159,7 @@ public class MySQLDBInitializer {
 		if (con != null) {  // if there is a database connection
 			
 			// search for number of records that match entered keyword
-			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM records WHERE articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%'" 
+			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM " + tableName + " WHERE articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%'" 
 					+ "AND pubDateString BETWEEN '" + beginYear + "-01" + "-01' AND '" + endYear + "-12" + "-31'");
 			
 				try { 
@@ -130,6 +167,7 @@ public class MySQLDBInitializer {
 						numKeywords = sqlResults.getString(1);
 					}
 				} catch (SQLException e) {
+					engine.getLogger().writeToErrorLog(e.toString());
 					System.out.println("Sorry, there was a problem with this operation.");
 				}
 		}
@@ -146,7 +184,7 @@ public class MySQLDBInitializer {
 		String results = "";
 		if (con != null) {  // if there is a database connection
 			// query database for date range and keywords
-			ResultSet sqlResults = sendMYSQLQuery("SELECT articleTitle, abstractText, keywords, pubDateString FROM records WHERE (articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%')");
+			ResultSet sqlResults = sendMYSQLQuery("SELECT articleTitle, abstractText, keywords, pubDateString FROM " + tableName + " WHERE (articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%')");
 					
 			
 			try {
@@ -155,6 +193,7 @@ public class MySQLDBInitializer {
 					results += "<li>" + sqlResults.getString(1) +"</li>";
 				}
 			} catch (SQLException e) {
+				engine.getLogger().writeToErrorLog(e.toString());
 				e.printStackTrace();
 			}
 		}
@@ -175,7 +214,7 @@ public class MySQLDBInitializer {
 		if (con != null) {  // if there is a database connection
 			
 			// query database for date range and keywords
-			ResultSet sqlResults = sendMYSQLQuery("SELECT articleTitle, abstractText, keywords, pubDateString FROM records WHERE (articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%') "
+			ResultSet sqlResults = sendMYSQLQuery("SELECT articleTitle, abstractText, keywords, pubDateString FROM " + tableName + " WHERE (articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%') "
 					+ "AND pubDateString BETWEEN '" + beginYear + "-01" + "-01' AND '" + endYear + "-12" + "-31'");
 			
 			try {
@@ -184,6 +223,7 @@ public class MySQLDBInitializer {
 					results += "<li>" + sqlResults.getString(1) + "</li>";
 				}
 			} catch (SQLException e) {
+				engine.getLogger().writeToErrorLog(e.toString());
 				e.printStackTrace();
 			}
 			
@@ -200,6 +240,7 @@ public class MySQLDBInitializer {
 		try {
 			rs = stmt.executeQuery(queryStr);			
 		} catch (SQLException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}  
 		

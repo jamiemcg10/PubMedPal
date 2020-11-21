@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.bu.metcs622.handleRequests.SearchParams;
+//import edu.bu.metcs622.handleRequests.SearchParams;
 
 /**
  * SearchHistory holds information about previous searches

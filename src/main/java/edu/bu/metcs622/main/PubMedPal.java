@@ -33,7 +33,7 @@ import edu.bu.metcs622.scandata.Engine;
 @SpringBootApplication
 @Controller
 public class PubMedPal {
-	Engine engine;
+	Engine engine = null;
 	GsonBuilder builder = new GsonBuilder();  // initialize and create gson builder for forming and parsing json
 	Gson gson = builder.create();
 
@@ -81,10 +81,16 @@ public class PubMedPal {
 			System.out.println("71: " + userRequest);
 			SearchParams searchParams = gson.fromJson(userRequest, SearchParams.class);  // pull params generated from parseRequest and method 
 			System.out.println("73: " + searchParams);
-			
+			String response = "";
 			// perform search
-			String response = RequestHandler.getRequestResult(
+			try {
+				response = RequestHandler.getRequestResult(
 					engine, searchParams.getMethod(),searchParams.getTerm(),searchParams.getStartDate(), searchParams.getEndDate(), searchParams.getGetCount());
+			} catch (Exception e) {
+				// most likely here because a file was saved while the program was running
+				response = "{\"shortSearchDescription\": \"\", \"results\": \"Sorry, something went wrong. Please refresh the page.\", \"getCount\": \"0\"}";
+
+			}
 			//System.out.println(response);
 			return response;
 		}
@@ -97,6 +103,7 @@ public class PubMedPal {
 	@PostMapping("/api/initialize")
 	@ResponseBody
 		public String buildDataStores(@RequestBody String files) {
+		System.out.println("FILES SELECTED: " + files);
 			engine = new Engine();
 			
 			try {
@@ -112,29 +119,36 @@ public class PubMedPal {
 	 * Closes connection to SQL database, lucene index, and log files
 	 */
 	@GetMapping("/api/close")
+	@ResponseBody
 		public void closeResources() {
 			System.out.println("Closing resources");
-			try {
-				engine.getMysql().closeSQLDatabase();
-			} catch (Exception e){
-				;
+			if (engine != null) {
+				try {
+					if (engine.getMysql() != null) {
+						engine.getMysql().closeSQLDatabase();
+					}
+				} catch (Exception e){
+					engine.getLogger().writeToErrorLog(e.toString());
+				}
+				try {
+					if (engine.getLucene() != null) {
+						engine.getLucene().closeIndexWriter();
+					}
+				} catch (Exception e){
+					engine.getLogger().writeToErrorLog(e.toString());
+				}
+				try {
+					engine.getLogger().closeSearchLog();
+				} catch (Exception e){
+					engine.getLogger().writeToErrorLog(e.toString());
+				}
+				try {
+					engine.getLogger().closeErrorLog();
+				} catch (Exception e){
+					;
+				}
 			}
-			try {
-				engine.getLucene().closeIndexWriter();
-			} catch (Exception e){
-				;
-			}
-			try {
-				engine.getLogger().closeErrorLog();
-			} catch (Exception e){
-				;
-			}
-			try {
-				engine.getLogger().closeSearchLog();
-			} catch (Exception e){
-				;
-			}
-	}
+	} // end closeResources()
 	
 	
 

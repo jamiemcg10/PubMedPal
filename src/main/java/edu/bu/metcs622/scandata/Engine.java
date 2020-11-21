@@ -1,7 +1,7 @@
 package edu.bu.metcs622.scandata;
 
-import java.io.File;
-import java.io.FileWriter;
+//import java.io.File;
+//import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -12,11 +12,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-
-import edu.bu.met622.database.DatastoreBuilder;
-import edu.bu.met622.database.MongoDBInitializer;
-import edu.bu.met622.database.MySQLDBInitializer;
-import edu.bu.met622.lucene.LuceneSearcher;
+import edu.bu.metcs622.database.DatastoreBuilder;
+import edu.bu.metcs622.database.MongoDBInitializer;
+import edu.bu.metcs622.database.MySQLDBInitializer;
+import edu.bu.metcs622.lucene.LuceneSearcher;
 import edu.bu.metcs622.main.Logger;
 
 /**
@@ -25,9 +24,9 @@ import edu.bu.metcs622.main.Logger;
  */
 public class Engine {
 
-	private MySQLDBInitializer mysql;
+	private MySQLDBInitializer mysql = null;
 	private MongoDBInitializer mongodb;
-	private LuceneSearcher lucene;
+	private LuceneSearcher lucene = null;
 	private BruteForceSearcher bfSearch;
 	private SearchHistory history;
 	private Logger logger;
@@ -54,13 +53,13 @@ public class Engine {
 			System.out.println("Starting engine...");
 			
 			// retrieve an xml document
-			Combiner combine = new Combiner(files);
+			Combiner combine = new Combiner(this, files);
 			Document combinedXML = combine.getCombinedXML();
 			fileSize = combine.getFileSize();
 			
 			if (combinedXML != null) {
 				// there is a document - add it to databases, lucene index, and brute force searcher
-				DatastoreBuilder dbBuilder = new DatastoreBuilder(combinedXML);
+				DatastoreBuilder dbBuilder = new DatastoreBuilder(this, files, combinedXML);
 				setMysql(dbBuilder.getMysql());
 				setMongodb(dbBuilder.getMongoDb());
 				setLucene(dbBuilder.getLucene());
@@ -92,11 +91,8 @@ public class Engine {
 			logger.writeToErrorLog(e1.toString());
 			e1.printStackTrace();
 		}
-	
-			
+				
 	}
-
-
 
 
 	public MySQLDBInitializer getMysql() {
@@ -131,7 +127,6 @@ public class Engine {
 		return this.bfSearch;
 	}
 
-
 	private void setBfSearch(BruteForceSearcher bfSearch) {
 		this.bfSearch = bfSearch;
 	}
@@ -140,27 +135,12 @@ public class Engine {
 		return this.history;
 	}
 
-
-	private void setHistory(SearchHistory history) {
-		this.history = history;
-	}
-
-
 	public Logger getLogger() {
 		return logger;
-	}
-
-	private void setLogger(Logger logger) {
-		this.logger = logger;
-		
 	}
 	
 	public long getFileSize() {
 		return fileSize;
-	}
-
-	private void setLogger(long fileSize) {
-		this.fileSize = fileSize;			
 	}
 
 }

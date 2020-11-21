@@ -1,9 +1,9 @@
-package edu.bu.met622.lucene;
+package edu.bu.metcs622.lucene;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Set;
+//import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
@@ -22,7 +22,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
 import edu.bu.metcs622.main.Constants;
-import edu.bu.metcs622.scandata.Result;
+//import edu.bu.metcs622.scandata.Result;
+import edu.bu.metcs622.scandata.Engine;
 
 
 /**
@@ -34,15 +35,20 @@ public class LuceneSearcher {
 	IndexWriter testIndexWriter;
 	StandardAnalyzer analyzer;
 	FSDirectory index;
+	String indexName = "";
+	Engine engine;
 	
 	
 	/**
 	 * Initialize lucene index writer
 	 */
-	public LuceneSearcher() throws ParseException {
+	public LuceneSearcher(Engine engine, String fileName) throws ParseException {
+		this.indexName = fileName;
+		this.engine = engine;
 		try {
 			indexWriter = initializeLucene();	
 		} catch (IOException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 	} // end constructor
@@ -52,14 +58,28 @@ public class LuceneSearcher {
 	// open index and delete all entries so it can be recreated
 	private IndexWriter initializeLucene() throws IOException, ParseException {
 		analyzer = new StandardAnalyzer();
-		index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION));
+		index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
 		IndexWriterConfig config = new IndexWriterConfig(analyzer);
 		IndexWriter w = new IndexWriter(index, config);
-		w.deleteAll();	// remove entries currently in index
+		//w.deleteAll();	// remove entries currently in index
 		
 		return w;
 	}
 	
+	
+	public boolean checkIndexExists(String indexName) {
+		try {
+			IndexReader reader = DirectoryReader.open(index);
+			if (reader.numDocs() > 0) {
+				return true;
+			}
+		} catch (IOException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
+			return false;
+		}
+
+		return false;
+	}
 
 	/**
 	 * Add Lucene Document to index
@@ -82,6 +102,7 @@ public class LuceneSearcher {
 			// add doc to indexWriter
 			indexWriter.addDocument(doc);
 		} catch (Exception e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 	}
@@ -137,9 +158,9 @@ public class LuceneSearcher {
 				org.apache.lucene.document.Document d = searcher.doc(hits3[i].doc);
 				resultsSet.add(d.get("articleTitle"));
 			}
-			
 
 		} catch (IOException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 		
@@ -218,8 +239,8 @@ public class LuceneSearcher {
 				}
 			}
 			
-
 		} catch (IOException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 		
@@ -247,7 +268,9 @@ public class LuceneSearcher {
 	
 	
 	public void closeIndexWriter() throws IOException {
-		indexWriter.close();
+		if (indexWriter.isOpen()) {
+			indexWriter.close();
+		}
 	}
 	
 } // end LuceneSearcher class

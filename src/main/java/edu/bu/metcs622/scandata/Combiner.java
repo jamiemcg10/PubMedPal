@@ -36,6 +36,7 @@ import edu.bu.metcs622.main.Constants;
 public class Combiner {
 	Document combinedXML = null;
 	long fileSize = 0;
+	Engine engine;
 	
 	/**
 	 * Constructor that initializes Combiner with files
@@ -47,7 +48,8 @@ public class Combiner {
 	 * @throws ParseException
 	 * @throws SQLException
 	 */
-	public Combiner(String listOfFiles) throws IOException, ParserConfigurationException, SAXException, TransformerConfigurationException, ParseException, SQLException{
+	public Combiner(Engine engine, String listOfFiles) throws IOException, ParserConfigurationException, SAXException, TransformerConfigurationException, ParseException, SQLException{
+		this.engine = engine;
 		
 		String[] fileList = listOfFiles.split(",");
 		File[] files = new File[fileList.length];
@@ -109,7 +111,7 @@ public class Combiner {
 			
 			combinedFiles = mergeXMLs(unzippedFiles);
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 
@@ -149,7 +151,7 @@ public class Combiner {
 			System.out.println("Time to parse and normalize file(s): " + (endParseAndNormalize - startParseAndNormalize)/1000 + "s.");
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		} 
 		
@@ -170,7 +172,7 @@ public class Combiner {
 		long endMergeXMLLoop = new Date().getTime();
 		
 		System.out.println("Time to go through mergeXML loop: " + (endMergeXMLLoop - startMergeXMLLoop)/1000 + "s.");
-		System.out.println("Size of combinedDoc: " + fileSize);
+		System.out.println("Size of combinedDoc: " + fileSize/100 + "KB");
 		return combinedDoc;
 		
 				

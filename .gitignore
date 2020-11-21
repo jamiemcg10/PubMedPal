@@ -4,6 +4,9 @@ Constants.java
 /data/pubmed20n1016.xml
 data/pubmed20n1016.xml
 pubmed20n1016.xml
+/data/*.xml
+data/LuceneData
+
 
 HELP.md
 target/

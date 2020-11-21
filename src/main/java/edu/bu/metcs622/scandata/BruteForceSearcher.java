@@ -63,33 +63,33 @@ public class BruteForceSearcher {
 			if (articleTitle.toLowerCase().indexOf(searchTerm) >= 0 || abstractText.toLowerCase().indexOf(searchTerm) >= 0 ||
 					keywords.toLowerCase().indexOf(searchTerm) >= 0) {  // if the keyword is in the article title, abstract, or keywords, a result was found
 																		// process it
-				Result searchResult = new Result();  // create new result
+//				Result searchResult = new Result();  // create new result
 				
 				// add Article Title to result
-				searchResult.setArticleTitle(articleTitle);
+//				searchResult.setArticleTitle(articleTitle);
 				
 				// add Journal Title to result
 //				searchResult.setJournalTitle(( (Element) articleElement.getElementsByTagName("Journal").item(0) )
 //						.getElementsByTagName("Title").item(0).getTextContent());
 				
 				//	add published date to result - only add individial fields if they are included
-				Element journalIssue = (Element) articleElement.getElementsByTagName("Journal").item(0);
-				String pubDateString = "";
-				journalIssue = (Element) journalIssue.getElementsByTagName("JournalIssue").item(0);
-				if (journalIssue.getElementsByTagName("Year").item(0) != null) {
-					pubDateString += journalIssue.getElementsByTagName("Year").item(0).getTextContent() + " ";
-				}
-				if (journalIssue.getElementsByTagName("Month").item(0) != null) {
-					pubDateString += journalIssue.getElementsByTagName("Month").item(0).getTextContent() + " ";
-				}
-				if (journalIssue.getElementsByTagName("Day").item(0) != null) {
-					pubDateString += journalIssue.getElementsByTagName("Day").item(0).getTextContent() + " ";
-				}
-				
-				searchResult.setPubDate(pubDateString);
+//				Element journalIssue = (Element) articleElement.getElementsByTagName("Journal").item(0);
+//				String pubDateString = "";
+//				journalIssue = (Element) journalIssue.getElementsByTagName("JournalIssue").item(0);
+//				if (journalIssue.getElementsByTagName("Year").item(0) != null) {
+//					pubDateString += journalIssue.getElementsByTagName("Year").item(0).getTextContent() + " ";
+//				}
+//				if (journalIssue.getElementsByTagName("Month").item(0) != null) {
+//					pubDateString += journalIssue.getElementsByTagName("Month").item(0).getTextContent() + " ";
+//				}
+//				if (journalIssue.getElementsByTagName("Day").item(0) != null) {
+//					pubDateString += journalIssue.getElementsByTagName("Day").item(0).getTextContent() + " ";
+//				}
+//				
+//				searchResult.setPubDate(pubDateString);
 
 				// Add authors names to result
-				String authorString = "";
+//				String authorString = "";
 //				try {
 //					NodeList authors = ((Element) articleElement.getElementsByTagName("AuthorList").item(0)).getElementsByTagName("Author");
 //					for (int a=0; a<authors.getLength(); a++) {
@@ -104,14 +104,14 @@ public class BruteForceSearcher {
 //				} catch(NullPointerException e) {
 //					;
 //				}
-				searchResult.setAuthors(authorString);
-
-				//	add abstract to result
-				searchResult.setAbstractText(abstractText);
-			
-				
+//				searchResult.setAuthors(authorString);
+//
+//				//	add abstract to result
+//				searchResult.setAbstractText(abstractText);
+//			
+//				
 				// add result to results string
-				returnResultsString += "<li>" + searchResult + "</li>";
+				returnResultsString += "<li>" + articleTitle + "</li>";
 				returnResultCount++;
 						
 				
@@ -185,11 +185,11 @@ public class BruteForceSearcher {
 																		// process it
 				
 
-				Result searchResult = new Result();  // create new result
-						
-				
-				// add Article Title to result
-				searchResult.setArticleTitle(articleTitle);
+//				Result searchResult = new Result();  // create new result
+//						
+//				
+//				// add Article Title to result
+//				searchResult.setArticleTitle(articleTitle);
 				
 				// add Journal Title to result
 //				searchResult.setJournalTitle(( (Element) articleElement.getElementsByTagName("Journal").item(0) )
@@ -197,16 +197,16 @@ public class BruteForceSearcher {
 				
 				
 				// finish pub date
-				if (journalIssue.getElementsByTagName("Month").item(0) != null) {
-					pubDateString += journalIssue.getElementsByTagName("Month").item(0).getTextContent() + " ";
-				}
-				if (journalIssue.getElementsByTagName("Day").item(0) != null) {
-					pubDateString += journalIssue.getElementsByTagName("Day").item(0).getTextContent() + " ";
-				}
-				searchResult.setPubDate(pubDateString);
-
-				// Add authors names to result
-				String authorString = "";
+//				if (journalIssue.getElementsByTagName("Month").item(0) != null) {
+//					pubDateString += journalIssue.getElementsByTagName("Month").item(0).getTextContent() + " ";
+//				}
+//				if (journalIssue.getElementsByTagName("Day").item(0) != null) {
+//					pubDateString += journalIssue.getElementsByTagName("Day").item(0).getTextContent() + " ";
+//				}
+//				searchResult.setPubDate(pubDateString);
+//
+//				// Add authors names to result
+//				String authorString = "";
 //				try {
 //					NodeList authors = ((Element) articleElement.getElementsByTagName("AuthorList").item(0)).getElementsByTagName("Author");
 //					for (int a=0; a<authors.getLength(); a++) {
@@ -221,14 +221,14 @@ public class BruteForceSearcher {
 //				} catch(NullPointerException e) {
 //					;
 //				}
-				searchResult.setAuthors(authorString);
+				//searchResult.setAuthors(authorString);
 
 				//	add abstract to result
-				searchResult.setAbstractText(abstractText);
+				//searchResult.setAbstractText(abstractText);
 			
 				
 				// add result to results string
-				returnResultsString += "<li>" + searchResult + "</li>";
+				returnResultsString += "<li>" + articleTitle + "</li>";
 				returnResultCount++;
 				
 				
@@ -237,7 +237,7 @@ public class BruteForceSearcher {
 		} // end loop through articles
 		
 
-		System.out.println(returnResultsString);
+		//System.out.println(returnResultsString);
 		String[] results = {returnResultsString, String.valueOf(returnResultCount)};
 		return results;
 	}

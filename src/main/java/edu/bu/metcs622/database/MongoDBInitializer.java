@@ -1,4 +1,4 @@
-package edu.bu.met622.database;
+package edu.bu.metcs622.database;
 
 import static com.mongodb.client.model.Filters.*;
 
@@ -12,6 +12,8 @@ import org.bson.Document;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
+import edu.bu.metcs622.scandata.Engine;
 
 
 
@@ -27,15 +29,31 @@ public class MongoDBInitializer {
 	 * Constructor. Initializes connection with collection and drops data currently in collection
 	 * @param db
 	 */
-	public MongoDBInitializer(String db) {
+	public MongoDBInitializer(Engine engine, String db) {
 		try {
 			this.mongoClient = new MongoClient();  
 			this.dbObj = mongoClient.getDatabase("PubMedPal");
-			dbObj.getCollection(db).drop();
+			//dbObj.getCollection(db).drop();
 			this.col = dbObj.getCollection(db);		
 		} catch (Exception e) {
+			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * Checks for whether a table exists in MongoDB
+	 * @param tableName
+	 * @return whether table exists in MongoDB
+	 */
+	public boolean checkTableExists(String tableName) {
+		
+		if (this.col.count() > 0) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
