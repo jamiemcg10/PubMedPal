@@ -1,7 +1,5 @@
 package edu.bu.metcs622.scandata;
 
-//import java.io.File;
-//import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;

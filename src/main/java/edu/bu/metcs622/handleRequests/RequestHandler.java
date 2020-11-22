@@ -34,7 +34,7 @@ public class RequestHandler {
 			e.printStackTrace();
 		}
 		
-        lowerRequest = lowerRequest.replaceAll("[?.!]$","");  // remove punctuation from end of request
+        lowerRequest = lowerRequest.replaceAll("[?.!/]$","");  // remove punctuation from end of request
         lowerRequest = lowerRequest.replaceAll("again$",""); // remove unnecessary words from end of request
         lowerRequest = lowerRequest.replaceAll("please$",""); 
         lowerRequest = lowerRequest.trim();
@@ -68,8 +68,7 @@ public class RequestHandler {
 			if (lowerRequest.indexOf("how many") >= 0 || lowerRequest.indexOf("count ") >= 0) {
 				returnCount = true;
 			}
-			
-			// find papers from 2012 to 2015 about/on/for obesity
+		
 			
 			// look for key phrases to identify the start of the search term
 			if ((termFinderIndex = lowerRequest.indexOf("papers on")) >= 0) {
@@ -113,9 +112,6 @@ public class RequestHandler {
 			// if a key phrase was found, find the end of the search term
 			if (termStartIndex >= 0) { 
 				int termEndIndex = lowerRequest.indexOf(" ", termStartIndex+1); // look for a space after the term
-				System.out.println("termStartIndex: " + termStartIndex);
-				System.out.println("termEndIndex: " + termEndIndex);
-				System.out.println("termStartIndex: " + termStartIndex);
 				if (termEndIndex == -1) { // term is last word of request
 					term = lowerRequest.substring(termStartIndex).trim();
 				} else {
@@ -128,8 +124,8 @@ public class RequestHandler {
 					if ((sDateFinderIndex = lowerRequest.indexOf("between")) >= 0) { // removed termEndIndex from indexOf
 						sDateStartIndex = sDateFinderIndex + 7;
 						int[] indexes = getEDateStartIndex(lowerRequest, sDateStartIndex, new String[]{"and"});
-						eDateStartIndex = indexes[1];
-						eDateFinderIndex = indexes[0];
+						eDateStartIndex = indexes[1];  // beginning of end date
+						eDateFinderIndex = indexes[0]; // beginning of end date key phrase
 					} else if ((sDateFinderIndex = lowerRequest.indexOf("from")) >= 0) {
 						sDateStartIndex = sDateFinderIndex + 4;
 						int[] indexes = getEDateStartIndex(lowerRequest, sDateStartIndex, new String[]{"to", "through"});
@@ -149,11 +145,11 @@ public class RequestHandler {
 					
 						
 						if (eDateStartIndex > -1) { // there is a start date and end date - set the start and end date
-							startDate = lowerRequest.substring(sDateStartIndex, eDateFinderIndex).trim();
+							startDate = lowerRequest.substring(sDateStartIndex, eDateFinderIndex).replaceAll("[^0-9]", "");  // set start date and remove non-numeric chars
 							if ((eDateEndIndex = lowerRequest.indexOf(" ", eDateStartIndex+1)) >= 0) { // there is a space after the end date
-								endDate = lowerRequest.substring(eDateStartIndex, eDateEndIndex).trim();
+								endDate = lowerRequest.substring(eDateStartIndex, eDateEndIndex).replaceAll("[^0-9]", "");  // set end date and remove non-numeric chars
 							} else {
-								endDate = lowerRequest.substring(eDateStartIndex).trim(); // 
+								endDate = lowerRequest.substring(eDateStartIndex).replaceAll("[^0-9]", ""); //  set end date and remove non-numeric chars
 							}
 						}
 
@@ -161,7 +157,7 @@ public class RequestHandler {
 					if (sDateStartIndex == -1) { // there is no start date yet
 						if ((sDateFinderIndex = lowerRequest.indexOf("after")) >= 0) {
 							sDateStartIndex = sDateFinderIndex + 5;
-							startDate = lowerRequest.substring(sDateStartIndex).trim();
+							startDate = startDate.replaceAll("[^0-9]", "");  // remove non-numeric characters
 							// start from next year
 							try {
 								int numDate = Integer.parseInt(startDate);
@@ -173,7 +169,7 @@ public class RequestHandler {
 							}
 						} if ((eDateFinderIndex = lowerRequest.indexOf("before")) >= 0) {
 							eDateStartIndex = eDateFinderIndex + 6;
-							endDate = lowerRequest.substring(eDateStartIndex).trim();
+							endDate = endDate.replaceAll("[^0-9]", "");  // remove non-numeric characters
 							// end year before
 							try {
 								int numDate = Integer.parseInt(endDate);

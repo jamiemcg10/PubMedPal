@@ -146,7 +146,7 @@
             width: 450px;
             font-family: 'Open Sans', sans-serif;
             padding: 3px;
-            color: rgb(35,35,35);
+            color: rgb(55,55,55);
             border-right: none;
             resize: none;
         }
@@ -250,8 +250,6 @@
                         contentType: 'application/json',
                         data: body,
                         success: function(data, textStatus, jqXHR){ 
-                            console.log(data);
-                            console.log(textStatus);
                             data = JSON.parse(data);
 
                             // have request type - handle or send actual request
@@ -261,9 +259,6 @@
                                     content: "Sorry, I don't understand what you're saying."
                                 });
                             } else if (data.requestType === "get search history"){
-                                console.log(data.searchHistory);
-                                //data.searchHistory = JSON.parse(data.searchHistory);
-                                console.log(data.searchHistory);
                                 let searchHistory = `Frequencies:<ul>${data.searchHistory.frequencies}</ul>&nbsp;<br/>Descriptions:<ol>${data.searchHistory.descriptions}</ol>`;
                                 botui.message.update(index, {
                                     loading: false,
@@ -296,7 +291,6 @@
                                         autoHide: true
                                     }).then((res)=>{
                                         method = res.value;
-                                        //botui.message.remove(index2);
                                         sendSearchRequestToServer(method, data.term, data.startDate, data.endDate, data.getCount); // search
                                     });                      
                                 });
@@ -304,11 +298,6 @@
 
                             
                         },
-                        error: function(jqXHR, textStatus, errorThrown){ 
-                            console.log("error");
-                            console.log(textStatus);
-                            console.log(errorThrown);
-                        }
                     });
                 });
             }
@@ -332,8 +321,6 @@
                         contentType: 'application/json',
                         data: body,
                         success: function(data, textStatus, jqXHR){ 
-                            console.log(data);
-                            console.log(textStatus);  // success
                             data = JSON.parse(data);
                             let msgContent;
                             if (data.results === ""){ // results are empty
@@ -365,10 +352,6 @@
                             $('#message').focus();
                         },
                         error: function(jqXHR, textStatus, errorThrown){ 
-                            console.log("error");
-                            console.log(jqXHR);
-                            console.log(textStatus);
-                            console.log(errorThrown);
                             botui.message.update(index, {
                                 loading: false,
                                 content: "Sorry, something went wrong. Try again later."
@@ -402,10 +385,6 @@
                     contentType: 'application/json',
                     data: filesToOpen,
                     success: function(data, textStatus, jqXHR){ 
-                        console.log("success");
-                        console.log(data);
-                        console.log(jqXHR);
-                        console.log(textStatus);
                         $('#file-selector').hide();
                         $('.overlay').hide();
                         $('body').attr("loading","false");
@@ -414,10 +393,9 @@
                     },
                     error: function(jqXHR, textStatus, errorThrown){ 
                         // should probably show an error message
-                        console.log("error");
-                        console.log(jqXHR);
-                        console.log(textStatus);
-                        console.log(errorThrown);
+                        // console.log(jqXHR);
+                        // console.log(textStatus); // error
+                        // console.log(errorThrown);
                     }
                 });
 
@@ -434,18 +412,6 @@
                 $.ajax({
                     url: '/api/close', 
                     type: 'GET',
-                    success: function(data, textStatus, jqXHR){ 
-                        console.log("success");
-                        console.log(data);
-                        console.log(jqXHR);
-                        console.log(textStatus);                        
-                    },
-                    error: function(jqXHR, textStatus, errorThrown){ 
-                        console.log("error");
-                        console.log(jqXHR);
-                        console.log(textStatus);
-                        console.log(errorThrown);
-                    }
                 });
             });
         

@@ -3,7 +3,6 @@ package edu.bu.metcs622.lucene;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
-//import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
@@ -22,7 +21,6 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
 import edu.bu.metcs622.main.Constants;
-//import edu.bu.metcs622.scandata.Result;
 import edu.bu.metcs622.scandata.Engine;
 
 
@@ -61,7 +59,6 @@ public class LuceneSearcher {
 		index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
 		IndexWriterConfig config = new IndexWriterConfig(analyzer);
 		IndexWriter w = new IndexWriter(index, config);
-		//w.deleteAll();	// remove entries currently in index
 		
 		return w;
 	}
@@ -143,9 +140,6 @@ public class LuceneSearcher {
 			// loop through results from each query and add title to results set to remove duplicates
 			for (int i=0; i<hits1.length; i++) {
 				org.apache.lucene.document.Document d = searcher.doc(hits1[i].doc);
-				if (true) {
-					System.out.println(d.get("pubDateString"));
-				}
 				resultsSet.add(d.get("articleTitle"));
 			}
 			
@@ -249,7 +243,6 @@ public class LuceneSearcher {
 			returnResultsString += "<li>" + article + "</li>";	
 		}
 		
-		System.out.println(returnResultsString);
 		String[] arrayToReturn = {returnResultsString, String.valueOf(resultsSet.size())};
 		return arrayToReturn;
 	}

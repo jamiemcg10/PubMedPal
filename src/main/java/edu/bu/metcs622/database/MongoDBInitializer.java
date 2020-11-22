@@ -33,7 +33,6 @@ public class MongoDBInitializer {
 		try {
 			this.mongoClient = new MongoClient();  
 			this.dbObj = mongoClient.getDatabase("PubMedPal");
-			//dbObj.getCollection(db).drop();
 			this.col = dbObj.getCollection(db);		
 		} catch (Exception e) {
 			engine.getLogger().writeToErrorLog(e.toString());
@@ -160,9 +159,7 @@ public class MongoDBInitializer {
 					).iterator();
 			
 			
-			// log results
-			
-			
+			// log results		
 			if (it.hasNext()) {
 				while(it.hasNext()) {
 					org.bson.Document result = it.next();

@@ -61,7 +61,6 @@ public class MySQLDBInitializer {
 			
 				try { 
 					if (sqlResults.next()) {
-						System.out.println("MYSQL ROWS: " + sqlResults.getString(1));
 						if (!sqlResults.getString(1).equals("0")) {
 							return true;
 						}
@@ -157,10 +156,12 @@ public class MySQLDBInitializer {
 	public String countKeywordsMYSQL(String keyword, String beginYear, String endYear) {
 		String numKeywords = "";
 		if (con != null) {  // if there is a database connection
+			System.out.println("160: " + beginYear);
+			System.out.println("161: " + endYear);
 			
 			// search for number of records that match entered keyword
-			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM " + tableName + " WHERE articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%'" 
-					+ "AND pubDateString BETWEEN '" + beginYear + "-01" + "-01' AND '" + endYear + "-12" + "-31'");
+			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM " + tableName + " WHERE (articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%')" 
+					+ "AND (pubDateString BETWEEN '" + beginYear + "-01" + "-01' AND '" + endYear + "-12" + "-31')");
 			
 				try { 
 					while(sqlResults.next()) { // if there is a match

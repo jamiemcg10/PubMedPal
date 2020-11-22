@@ -1,12 +1,6 @@
 package edu.bu.metcs622.main;
 
 
-//import java.io.IOException;
-//import java.sql.SQLException;
-//import java.text.ParseException;
-//
-//import javax.xml.parsers.ParserConfigurationException;
-//import javax.xml.transform.TransformerConfigurationException;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,12 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RequestMethod;
-//import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-//import org.springframework.web.bind.annotation.RestController;
-//import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -64,9 +53,7 @@ public class PubMedPal {
 	@PostMapping("/api/parse")
 	@ResponseBody
 		public String parseMessage(@RequestBody String userRequest) {
-			System.out.println(userRequest);
 			String response = RequestHandler.parseRequest(engine, userRequest);  // parse term and dates from request
-			System.out.println(response);
 			return response;
 		}
 	
@@ -78,9 +65,7 @@ public class PubMedPal {
 	@PostMapping("/api/search")
 	@ResponseBody
 		public String performSearch(@RequestBody String userRequest) {
-			System.out.println("71: " + userRequest);
 			SearchParams searchParams = gson.fromJson(userRequest, SearchParams.class);  // pull params generated from parseRequest and method 
-			System.out.println("73: " + searchParams);
 			String response = "";
 			// perform search
 			try {
@@ -121,8 +106,8 @@ public class PubMedPal {
 	@GetMapping("/api/close")
 	@ResponseBody
 		public void closeResources() {
-			System.out.println("Closing resources");
 			if (engine != null) {
+				System.out.println("Closing resources...");
 				try {
 					if (engine.getMysql() != null) {
 						engine.getMysql().closeSQLDatabase();
@@ -147,7 +132,10 @@ public class PubMedPal {
 				} catch (Exception e){
 					;
 				}
+				
+				System.out.println("Resources closed.");
 			}
+			
 	} // end closeResources()
 	
 	

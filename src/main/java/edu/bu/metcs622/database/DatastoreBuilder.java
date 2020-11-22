@@ -50,17 +50,13 @@ public class DatastoreBuilder {
 		}
 
 		long startTime = new Date().getTime();  // time how long it takes to build database
-		// build database and lucene index
 		// check to see if table is in MySQL
 		boolean mySQLTableExists = mysql.checkTableExists(files);
 		boolean mongoDBTableExists = mongoDb.checkTableExists(files);
 		boolean luceneIndexExists = lucene.checkIndexExists(files);
-		
+			
 
-		System.out.println("mySQLTableExists: " + mySQLTableExists);
-		System.out.println("mongoDBTableExists: " + mongoDBTableExists);
-		System.out.println("luceneIndexExists: " + luceneIndexExists);
-		
+		// build database and lucene index
 		if (!mySQLTableExists || !mongoDBTableExists || !luceneIndexExists) {
 			buildDatabase(doc, mySQLTableExists, mongoDBTableExists, luceneIndexExists); 
 		}

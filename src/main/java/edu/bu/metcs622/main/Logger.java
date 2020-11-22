@@ -27,7 +27,7 @@ public class Logger {
 		
 		try {
 			errorLog.createNewFile();
-			errorLogWriter = new BufferedWriter(new FileWriter(errorLog));
+			errorLogWriter = new BufferedWriter(new FileWriter(errorLog, true));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -35,13 +35,13 @@ public class Logger {
 		try {
 			
 			if (searchLog.createNewFile()) {
-				System.out.println("search log doesn't exist");
+				System.out.println("Search log doesn't exist");
 				searchLogWriter = new BufferedWriter(new FileWriter(searchLog));
-				searchLogWriter.append("Date,File size,Type,Method,Term,Time");
+				searchLogWriter.write("Date,File size (KB),Type,Method,Term,Time (ms.)");
 				searchLogWriter.newLine();
 				searchLogWriter.flush();
 			} else {
-				searchLogWriter = new BufferedWriter(new FileWriter(searchLog));
+				searchLogWriter = new BufferedWriter(new FileWriter(searchLog, true));
 			}
 		} catch (IOException e) {
 			writeToErrorLog(e.toString());
@@ -66,12 +66,12 @@ public class Logger {
 		boolean successful = false;
 		
 		try {
-			searchLogWriter.append(new Date().toString() + "," + fileSize/100 + "," + type + "," + method + "," + term + ","+ time);
+			searchLogWriter.write(new Date().toString() + "," + fileSize/100 + "," + type + "," + method + "," + term + ","+ time);
 			searchLogWriter.newLine();
 			searchLogWriter.flush();
 			successful = true;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 		
@@ -87,7 +87,7 @@ public class Logger {
 		boolean successful = false;
 		
 		try {
-			errorLogWriter.append(new Date().toString()+"\n"+error);
+			errorLogWriter.write(new Date().toString()+"\n"+error);
 			searchLogWriter.newLine();
 			errorLogWriter.flush();
 			successful = true;
@@ -105,9 +105,11 @@ public class Logger {
 	public boolean closeSearchLog() {
 		boolean successful = false;
 		try {
+			searchLogWriter.flush();
 			searchLogWriter.close();
 			successful = true;
 		} catch (IOException e) {
+			writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 		
@@ -121,10 +123,10 @@ public class Logger {
 	public boolean closeErrorLog() {
 		boolean successful = false;
 		try {
+			errorLogWriter.flush();
 			errorLogWriter.close();
 			successful = true;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
