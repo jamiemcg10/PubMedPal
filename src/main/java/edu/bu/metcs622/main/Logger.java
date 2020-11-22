@@ -37,8 +37,7 @@ public class Logger {
 			if (searchLog.createNewFile()) {
 				System.out.println("Search log doesn't exist");
 				searchLogWriter = new BufferedWriter(new FileWriter(searchLog));
-				searchLogWriter.write("Date,File size (KB),Type,Method,Term,Time (ms.)");
-				searchLogWriter.newLine();
+				searchLogWriter.write("Date,File size (KB),Type,Method,Term,Time (ms.)\n");
 				searchLogWriter.flush();
 			} else {
 				searchLogWriter = new BufferedWriter(new FileWriter(searchLog, true));
@@ -66,8 +65,7 @@ public class Logger {
 		boolean successful = false;
 		
 		try {
-			searchLogWriter.write(new Date().toString() + "," + fileSize/100 + "," + type + "," + method + "," + term + ","+ time);
-			searchLogWriter.newLine();
+			searchLogWriter.write(new Date().toString() + "," + fileSize/100 + "," + type + "," + method + "," + term + ","+ time + "\n");
 			searchLogWriter.flush();
 			successful = true;
 		} catch (IOException e) {
@@ -87,7 +85,7 @@ public class Logger {
 		boolean successful = false;
 		
 		try {
-			errorLogWriter.write(new Date().toString()+"\n"+error);
+			errorLogWriter.write(new Date().toString()+"\n"+error+"\n");
 			searchLogWriter.newLine();
 			errorLogWriter.flush();
 			successful = true;
