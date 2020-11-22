@@ -20,7 +20,9 @@ The front-end of this program is built using Javascript/JQuery and interacts wit
 ___
 ### To run on your computer: 
 1) Create a MySQL database named 'pubmed'
-2) Create a logs subfolder in the main project directory
-3) Edit the ConstantsTemplate.java file with the correct values for your system, rename the class to Constants, and save as Constants.java.
-4) Open a terminal window in the root directory and run mvn spring-boot:run
-5) Navigate to localhost:8080 in a Chrome browser
+2) Clone this repository
+3) Create a logs subfolder in the main project directory
+4) Edit the ConstantsTemplate.java file with the correct values for your system, rename the class to Constants, and save as Constants.java.
+5) Install Apache Maven (if not already installed)
+6) Open a terminal window in the root directory and run mvn spring-boot:run
+7) Navigate to localhost:8080 in a Chrome browser

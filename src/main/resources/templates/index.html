@@ -177,10 +177,11 @@
                         let lastBotMessage = $('.botui-message-content').last(); // get last message from bot
                             if (!lastBotMessage.hasClass("human")){ // confirm that message was from bot and not human
                                 try {
-                                    if (checkOverflow(lastBotMessage[0])){  // message is bigger than normal box
+                                    let boundEvents = $._data($(lastBotMessage), "events");
+                                    if (checkOverflow(lastBotMessage[0]) & boundEvents === undefined){  // message is bigger than normal box
                                         lastBotMessage.addClass('msg-closed');  // minimize message
-
                                         $(lastBotMessage).click(()=>{  // add event listener to message to toggle between open and closed
+                                            let events = $._data(this, "events");
                                             if ($(lastBotMessage).hasClass('msg-closed')){
                                                 $(lastBotMessage).addClass('msg-open');
                                                 $(lastBotMessage).removeClass('msg-closed');
@@ -331,7 +332,7 @@
                                 });
                             } else {
                                 if (data.getCount === "true"){
-                                    msgContent = `There are ${data.results} articles for ${data.shortSearchDescription}`
+                                    msgContent = `There are ${data.results} articles about ${data.shortSearchDescription}`
                                         botui.message.update(index, {
                                         loading: false,
                                         content: msgContent

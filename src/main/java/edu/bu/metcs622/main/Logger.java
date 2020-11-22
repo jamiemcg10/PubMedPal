@@ -86,7 +86,6 @@ public class Logger {
 		
 		try {
 			errorLogWriter.write(new Date().toString()+"\n"+error+"\n");
-			searchLogWriter.newLine();
 			errorLogWriter.flush();
 			successful = true;
 		} catch (IOException e) {

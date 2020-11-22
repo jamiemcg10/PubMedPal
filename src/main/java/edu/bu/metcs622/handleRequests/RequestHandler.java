@@ -157,7 +157,9 @@ public class RequestHandler {
 					if (sDateStartIndex == -1) { // there is no start date yet
 						if ((sDateFinderIndex = lowerRequest.indexOf("after")) >= 0) {
 							sDateStartIndex = sDateFinderIndex + 5;
-							startDate = startDate.replaceAll("[^0-9]", "");  // remove non-numeric characters
+							System.out.println("start date: " + startDate);
+							startDate = lowerRequest.substring(sDateStartIndex).replaceAll("[^0-9]", "");  // remove non-numeric characters
+							System.out.println("start date: " + startDate);
 							// start from next year
 							try {
 								int numDate = Integer.parseInt(startDate);
@@ -169,7 +171,7 @@ public class RequestHandler {
 							}
 						} if ((eDateFinderIndex = lowerRequest.indexOf("before")) >= 0) {
 							eDateStartIndex = eDateFinderIndex + 6;
-							endDate = endDate.replaceAll("[^0-9]", "");  // remove non-numeric characters
+							endDate = lowerRequest.substring(eDateStartIndex).replaceAll("[^0-9]", "");  // remove non-numeric characters
 							// end year before
 							try {
 								int numDate = Integer.parseInt(endDate);
