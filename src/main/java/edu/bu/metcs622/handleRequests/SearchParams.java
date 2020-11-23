@@ -7,6 +7,7 @@ package edu.bu.metcs622.handleRequests;
 public class SearchParams {
 	private String method;
 	private String term;
+	private String originalTerm;
 	private String startDate;
 	private String endDate;
 	private String getCount;
@@ -16,6 +17,7 @@ public class SearchParams {
 	public String toString() {
 		return "{\"method\": \"" + method + "\", " +
 				"\"term\": \"" + term + "\", " +
+				"\"originalTerm\": \"" + originalTerm + "\", " +
 				"\"startDate\": \"" + startDate  + "\", " +
 				"\"endDate\": \"" + endDate +  "\", " +
 				"\"getCount\": \"" + getCount +"\""
@@ -57,6 +59,14 @@ public class SearchParams {
 
 	public void setTerm(String term) {
 		this.term = term;
+	}
+	
+	public String getOriginalTerm() {
+		return this.originalTerm;
+	}
+
+	public void setOriginalTerm(String originalTerm) {
+		this.originalTerm = originalTerm;
 	}
 	
 	public String getStartDate() {

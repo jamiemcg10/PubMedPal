@@ -177,11 +177,10 @@
                         let lastBotMessage = $('.botui-message-content').last(); // get last message from bot
                             if (!lastBotMessage.hasClass("human")){ // confirm that message was from bot and not human
                                 try {
-                                    let boundEvents = $._data($(lastBotMessage), "events");
-                                    if (checkOverflow(lastBotMessage[0]) & boundEvents === undefined){  // message is bigger than normal box
+                                    let eventBound = $._data( $(lastBotMessage)[0], "events" );
+                                    if (checkOverflow(lastBotMessage[0]) & eventBound === undefined){  // message is bigger than normal box
                                         lastBotMessage.addClass('msg-closed');  // minimize message
                                         $(lastBotMessage).click(()=>{  // add event listener to message to toggle between open and closed
-                                            let events = $._data(this, "events");
                                             if ($(lastBotMessage).hasClass('msg-closed')){
                                                 $(lastBotMessage).addClass('msg-open');
                                                 $(lastBotMessage).removeClass('msg-closed');
@@ -190,9 +189,8 @@
                                                 $(lastBotMessage).removeClass('msg-open');
                                             }
                                         });
-                                        
                                     }
-                                } catch {
+                                } catch (error) {
                                     ;
                                 }
                             }
@@ -292,7 +290,7 @@
                                         autoHide: true
                                     }).then((res)=>{
                                         method = res.value;
-                                        sendSearchRequestToServer(method, data.term, data.startDate, data.endDate, data.getCount); // search
+                                        sendSearchRequestToServer(method, data.term, data.originalTerm, data.startDate, data.endDate, data.getCount); // search
                                     });                      
                                 });
                             }
@@ -303,7 +301,7 @@
                 });
             }
 
-            function sendSearchRequestToServer(method, term, startDate, endDate, getCount){
+            function sendSearchRequestToServer(method, term, originalTerm, startDate, endDate, getCount){
                 botui.message.bot({
                     loading: true,
                     type: 'text',
@@ -311,6 +309,7 @@
                     // send message to server
                     let body = `{ "method": ${method},
                         "term": ${term},
+                        "originalTerm": ${originalTerm},
                         "startDate": "${startDate}",
                         "endDate": "${endDate}",
                         "getCount": "${getCount}"
@@ -325,7 +324,13 @@
                             data = JSON.parse(data);
                             let msgContent;
                             if (data.results === ""){ // results are empty
-                                msgContent = "Sorry, I couldn't find anything."
+                                msgContent = "Sorry, I couldn't find anything.";
+                                botui.message.update(index, {
+                                    loading: false,
+                                    content: msgContent
+                                });
+                            } else if (data.results === "Sorry, something went wrong. Please refresh the page."){
+                                msgContent = data.results;
                                 botui.message.update(index, {
                                     loading: false,
                                     content: msgContent
@@ -441,6 +446,7 @@
         <p>Choose datasets to use</p>
         <select multiple id="file-select">
             <!--add more options if more files are added-->
+            <option value="pubmed20n1016">pubmed20n1016</option>
             <option value="pubmed20n1020">pubmed20n1020</option>
             <option value="pubmed20n1032">pubmed20n1032</option>
             <option value="pubmed20n1151">pubmed20n1151</option>

@@ -70,13 +70,12 @@ public class PubMedPal {
 			// perform search
 			try {
 				response = RequestHandler.getRequestResult(
-					engine, searchParams.getMethod(),searchParams.getTerm(),searchParams.getStartDate(), searchParams.getEndDate(), searchParams.getGetCount());
+					engine, searchParams.getMethod(), searchParams.getTerm(), searchParams.getOriginalTerm(), searchParams.getStartDate(), searchParams.getEndDate(), searchParams.getGetCount());
 			} catch (Exception e) {
 				// most likely here because a file was saved while the program was running
 				response = "{\"shortSearchDescription\": \"\", \"results\": \"Sorry, something went wrong. Please refresh the page.\", \"getCount\": \"0\"}";
 
 			}
-			//System.out.println(response);
 			return response;
 		}
 	
@@ -88,7 +87,6 @@ public class PubMedPal {
 	@PostMapping("/api/initialize")
 	@ResponseBody
 		public String buildDataStores(@RequestBody String files) {
-		System.out.println("FILES SELECTED: " + files);
 			engine = new Engine();
 			
 			try {

@@ -65,7 +65,7 @@ public class Logger {
 		boolean successful = false;
 		
 		try {
-			searchLogWriter.write(new Date().toString() + "," + fileSize/100 + "," + type + "," + method + "," + term + ","+ time + "\n");
+			searchLogWriter.write(new Date().toString() + "," + fileSize/1000 + "," + type + "," + method + "," + term + ","+ time + "\n");
 			searchLogWriter.flush();
 			successful = true;
 		} catch (IOException e) {

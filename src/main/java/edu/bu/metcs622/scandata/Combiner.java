@@ -172,7 +172,6 @@ public class Combiner {
 		long endMergeXMLLoop = new Date().getTime();
 		
 		System.out.println("Time to go through mergeXML loop: " + (endMergeXMLLoop - startMergeXMLLoop)/1000 + "s.");
-		System.out.println("Size of combinedDoc: " + fileSize/100 + "KB");
 		return combinedDoc;
 		
 				

@@ -66,7 +66,6 @@ public class BruteForceSearcher {
 				// add result to results string
 				returnResultsString += "<li>" + articleTitle + "</li>";
 				returnResultCount++;
-						
 				
 			} // end match 	
 
@@ -91,7 +90,7 @@ public class BruteForceSearcher {
 		int returnResultCount = 0;
 		searchTerm = searchTerm.toLowerCase();  // change search term to lower case to increase match accuracy
 		startDate += "-01-01";
-		endDate += "12-31";
+		endDate += "-12-31";
 		
 		NodeList allPubmedArticles = doc.getElementsByTagName("PubmedArticle");  // get list of all PubMed Articles
 		
@@ -128,7 +127,8 @@ public class BruteForceSearcher {
 			if (journalIssue.getElementsByTagName("Year").item(0) == null) {
 				continue;
 			} else {
-				pubDateString += journalIssue.getElementsByTagName("Year").item(0).getTextContent() + " ";
+				pubDateString += journalIssue.getElementsByTagName("Year").item(0).getTextContent() + "-01-01";
+				
 			}
 
 			
@@ -136,7 +136,6 @@ public class BruteForceSearcher {
 			if ((pubDateString.compareTo(startDate) >= 0 && pubDateString.compareTo(endDate) <= 0) && (articleTitle.toLowerCase().indexOf(searchTerm) >= 0 || abstractText.toLowerCase().indexOf(searchTerm) >= 0 ||
 					keywords.toLowerCase().indexOf(searchTerm) >= 0)) {  // if the keyword is in the article title, abstract, or keywords, a result was found
 																		// process it
-
 				
 				// add result to results string
 				returnResultsString += "<li>" + articleTitle + "</li>";

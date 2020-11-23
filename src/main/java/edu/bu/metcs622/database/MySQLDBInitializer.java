@@ -156,8 +156,6 @@ public class MySQLDBInitializer {
 	public String countKeywordsMYSQL(String keyword, String beginYear, String endYear) {
 		String numKeywords = "";
 		if (con != null) {  // if there is a database connection
-			System.out.println("160: " + beginYear);
-			System.out.println("161: " + endYear);
 			
 			// search for number of records that match entered keyword
 			ResultSet sqlResults = sendMYSQLQuery("SELECT COUNT(articleTitle) FROM " + tableName + " WHERE (articleTitle LIKE '%" + keyword + "%' OR abstractText LIKE '%" + keyword + "%' OR keywords LIKE '%" + keyword + "%')" 

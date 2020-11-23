@@ -6,6 +6,7 @@ data/pubmed20n1016.xml
 pubmed20n1016.xml
 /data/*.xml
 data/LuceneData
+/report
 
 
 HELP.md

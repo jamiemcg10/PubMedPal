@@ -25,9 +25,11 @@ public class RequestHandler {
 	 * of articles and search history (if that's what user requested)
 	 */
 	public static String parseRequest(Engine engine, String request) {
-		
+		String originalRequest = request;
 		String lowerRequest = request.toLowerCase();
+		
 		try {
+			originalRequest = URLDecoder.decode(originalRequest, "UTF-8");  // decode url (translate special characters)
 			lowerRequest = URLDecoder.decode(lowerRequest, "UTF-8");  // decode url (translate special characters)
 		} catch (UnsupportedEncodingException e) {
 			engine.getLogger().writeToErrorLog(e.toString());
@@ -38,6 +40,14 @@ public class RequestHandler {
         lowerRequest = lowerRequest.replaceAll("again$",""); // remove unnecessary words from end of request
         lowerRequest = lowerRequest.replaceAll("please$",""); 
         lowerRequest = lowerRequest.trim();
+        originalRequest = originalRequest.replaceAll("[?.!/]$","");  // remove punctuation from end of request
+        originalRequest = originalRequest.replaceAll("again$",""); // remove unnecessary words from end of request
+        originalRequest = originalRequest.replaceAll("please$","");
+        originalRequest = originalRequest.replaceAll("AGAIN$",""); // remove unnecessary words from end of request
+        originalRequest = originalRequest.replaceAll("PLEASE$","");
+
+
+        originalRequest = originalRequest.trim();
         
 		String searchHistory = "\"\""; // initialize string of empty string for search history
 		String requestType = "undefined";
@@ -54,6 +64,7 @@ public class RequestHandler {
 		
 		
 		String term = "";
+		String originalTerm = "";  // keep original term for case
 		String startDate = "";
 		String endDate = "";
 		
@@ -89,6 +100,10 @@ public class RequestHandler {
 				termStartIndex = termFinderIndex + 9;
 			} else if ((termFinderIndex = lowerRequest.indexOf("things about")) >= 0) {
 				termStartIndex = termFinderIndex + 12;
+			} else if ((termFinderIndex = lowerRequest.indexOf("results about")) >= 0) {
+				termStartIndex = termFinderIndex + 13;
+			} else if ((termFinderIndex = lowerRequest.indexOf("results for")) >= 0) {
+				termStartIndex = termFinderIndex + 11;
 			} else if ((termFinderIndex = lowerRequest.indexOf("include the term")) >= 0) {
 				termStartIndex = termFinderIndex + 16;
 			} else if ((termFinderIndex = lowerRequest.indexOf("search for")) >= 0) {
@@ -114,21 +129,24 @@ public class RequestHandler {
 				int termEndIndex = lowerRequest.indexOf(" ", termStartIndex+1); // look for a space after the term
 				if (termEndIndex == -1) { // term is last word of request
 					term = lowerRequest.substring(termStartIndex).trim();
+					originalTerm = originalRequest.substring(termStartIndex).trim();
 				} else {
 					term = lowerRequest.substring(termStartIndex, termEndIndex).trim();
+					originalTerm = originalRequest.substring(termStartIndex, termEndIndex).trim();
 				}
+				
 	
 				
-				// there is a term - look for search range
+				// there is a term and more after it - look for search range
 				if (termEndIndex != -1) {  
 					if ((sDateFinderIndex = lowerRequest.indexOf("between")) >= 0) { // removed termEndIndex from indexOf
 						sDateStartIndex = sDateFinderIndex + 7;
-						int[] indexes = getEDateStartIndex(lowerRequest, sDateStartIndex, new String[]{"and"});
+						int[] indexes = getEDateStartIndex(lowerRequest, sDateStartIndex, new String[]{"and","-"});
 						eDateStartIndex = indexes[1];  // beginning of end date
 						eDateFinderIndex = indexes[0]; // beginning of end date key phrase
 					} else if ((sDateFinderIndex = lowerRequest.indexOf("from")) >= 0) {
 						sDateStartIndex = sDateFinderIndex + 4;
-						int[] indexes = getEDateStartIndex(lowerRequest, sDateStartIndex, new String[]{"to", "through"});
+						int[] indexes = getEDateStartIndex(lowerRequest, sDateStartIndex, new String[]{"to", "through","-"});
 						eDateStartIndex = indexes[1];
 						eDateFinderIndex = indexes[0];
 					} else if ((sDateFinderIndex = lowerRequest.indexOf("starting in")) >= 0) {
@@ -157,9 +175,7 @@ public class RequestHandler {
 					if (sDateStartIndex == -1) { // there is no start date yet
 						if ((sDateFinderIndex = lowerRequest.indexOf("after")) >= 0) {
 							sDateStartIndex = sDateFinderIndex + 5;
-							System.out.println("start date: " + startDate);
 							startDate = lowerRequest.substring(sDateStartIndex).replaceAll("[^0-9]", "");  // remove non-numeric characters
-							System.out.println("start date: " + startDate);
 							// start from next year
 							try {
 								int numDate = Integer.parseInt(startDate);
@@ -198,7 +214,7 @@ public class RequestHandler {
 		}
 		
 		// return json for botui
-		return "{\"term\": \"" + term + "\", \"requestType\": \"" + requestType + "\", \"searchHistory\": " + searchHistory + 
+		return "{\"term\": \"" + term + "\", \"originalTerm\": \"" + originalTerm + "\", \"requestType\": \"" + requestType + "\", \"searchHistory\": " + searchHistory + 
 				", \"startDate\": \"" + parseDate(startDate) + "\", \"endDate\": \"" + parseDate(endDate)+ "\", \"getCount\": \"" + returnCount + "\"}";
 		 
 	} // end parseRequest()
@@ -254,7 +270,7 @@ public class RequestHandler {
 	 * @param getCount - boolean string for whether the search should count the number of articles the search returns
 	 * @return JSON string with results, a description of the search, and whether the result is a count
 	 */
-	public static String getRequestResult(Engine engine, String method, String term, String startDate, String endDate, String getCount) {
+	public static String getRequestResult(Engine engine, String method, String term, String originalTerm, String startDate, String endDate, String getCount) {
 		String results = "";
 		String searchDescription = "";
 		String shortSearchDescription = "";
@@ -274,19 +290,19 @@ public class RequestHandler {
 		
 		// route search request
 		if (startDate.equals("") && endDate.equals("")) {  // search just for term
-			shortSearchDescription = term;
+			shortSearchDescription = originalTerm;
 			if (method.equals("Brute force")) { 
 				try {
 					if (getCount.equals("true")) { // search for number of articles
 						searchStartTime = new Date().getTime();
 						results = engine.getBfSearch().searchFile(term)[1];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a brute force search for " + term;
+						searchDescription = "Do a brute force search for " + originalTerm;
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getBfSearch().searchFile(term)[0];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a brute force search for " + term;
+						searchDescription = "Do a brute force search for " + originalTerm;
 					}
 				} catch (IOException e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -298,12 +314,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getLucene().luceneSearch(term)[1];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a lucene search for " + term;
+						searchDescription = "Do a lucene search for " + originalTerm;
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getLucene().luceneSearch(term)[0];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a lucene search for " + term;
+						searchDescription = "Do a lucene search for " + originalTerm;
 					}
 				} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -315,12 +331,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getMongodb().countKeywordsMongoDB(term);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Get the number of results for " + term + "from MongoDB ";
+						searchDescription = "Get the number of results for " + originalTerm + "from MongoDB ";
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getMongodb().keywordSearchMongoDB(term);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a MongoDB search for " + term;
+						searchDescription = "Do a MongoDB search for " + originalTerm;
 					}
 				} catch (ParseException e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -332,12 +348,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getMysql().countKeywordsMYSQL(term);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Get the number of results for " + term + "from MySQL ";
+						searchDescription = "Get the number of results for " + originalTerm + "from MySQL ";
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getMysql().keywordSearchMYSQL(term);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a MySQL database search for " + term;
+						searchDescription = "Do a MySQL database search for " + originalTerm;
 					}
 				} catch (Exception e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -345,7 +361,7 @@ public class RequestHandler {
 				}
 			} 
 		} else { // at least one date is present in search
-			shortSearchDescription = term + (startDate.equals("") ? "" : (" from " + startDate)) + (endDate.equals("") ? " through now" : (" through " + endDate));
+			shortSearchDescription = originalTerm + (startDate.equals("") ? "" : (" from " + startDate)) + (endDate.equals("") ? " through now" : (" through " + endDate));
 			if (getCount.equals("true")) {
 				searchType = "count within date range";
 			} else {
@@ -366,12 +382,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getBfSearch().searchFile(term, startDate, endDate)[1];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a brute force search for " + term + " from " + startDate + " through " + endDate;
+						searchDescription = "Do a brute force search for " + originalTerm + " from " + startDate + " through " + endDate;
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getBfSearch().searchFile(term, startDate, endDate)[0];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a brute force search for " + term + " from " + startDate + " through " + endDate;
+						searchDescription = "Do a brute force search for " + originalTerm + " from " + startDate + " through " + endDate;
 					}
 				} catch (IOException e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -383,12 +399,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getLucene().luceneSearch(term, startDate, endDate)[1];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a lucene search for " + term + " from " + startDate + " through " + endDate;
+						searchDescription = "Do a lucene search for " + originalTerm + " from " + startDate + " through " + endDate;
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getLucene().luceneSearch(term, startDate, endDate)[0];
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a lucene search for " + term + " from " + startDate + " through " + endDate;
+						searchDescription = "Do a lucene search for " + originalTerm + " from " + startDate + " through " + endDate;
 					}
 				} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -400,12 +416,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getMongodb().countKeywordsMongoDB(term, startDate, endDate);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Count the number of results for " + term + " from MongoDB from " + startDate + " through " + endDate;
+						searchDescription = "Count the number of results for " + originalTerm + " from MongoDB from " + startDate + " through " + endDate;
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getMongodb().keywordSearchMongoDB(term, startDate, endDate);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a MongoDB search for " + term + " from " + startDate + " through " + endDate;
+						searchDescription = "Do a MongoDB search for " + originalTerm + " from " + startDate + " through " + endDate;
 					}
 				} catch (ParseException e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -417,12 +433,12 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getMysql().countKeywordsMYSQL(term, startDate, endDate);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Count the number of results for " + term + " from MySQL from " + startDate + " through " + endDate;
+						searchDescription = "Count the number of results for " + originalTerm + " from MySQL from " + startDate + " through " + endDate;
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getMysql().keywordSearchMYSQL(term, startDate, endDate);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Do a MySQL database search for " + term + " from " + startDate + " through " + endDate;
+						searchDescription = "Do a MySQL database search for " + originalTerm + " from " + startDate + " through " + endDate;
 					}
 				} catch (Exception e) {
 					engine.getLogger().writeToErrorLog(e.toString());
@@ -440,7 +456,7 @@ public class RequestHandler {
 		
 		// handle search time
 		System.out.println("Search ("+ searchType +") took " + (searchEndTime - searchStartTime) + " ms.");
-		engine.getLogger().writeToSearchLog(searchType, engine.getFileSize(), method, term, (searchEndTime - searchStartTime));
+		engine.getLogger().writeToSearchLog(searchType, engine.getFileSize(), method, originalTerm, (searchEndTime - searchStartTime));
 		
 		// have the result of the function returned as a string
 		results = results.replace("\"", "\\\"");
