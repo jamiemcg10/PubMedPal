@@ -3,7 +3,7 @@ package edu.bu.metcs622.scandata;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-//import java.io.FileWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -13,20 +13,19 @@ import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-//import javax.xml.transform.OutputKeys;
-//import javax.xml.transform.Transformer;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-//import javax.xml.transform.TransformerException;
-//import javax.xml.transform.TransformerFactory;
-//import javax.xml.transform.dom.DOMSource;
-//import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-//import edu.bu.met622.database.DatastoreBuilder;
 import edu.bu.metcs622.main.Constants;
 
 /**
@@ -35,7 +34,6 @@ import edu.bu.metcs622.main.Constants;
  */
 public class Combiner {
 	Document combinedXML = null;
-	long fileSize = 0;
 	Engine engine;
 	
 	/**
@@ -144,22 +142,16 @@ public class Combiner {
 		
 		try {
 			// PARSE XML FILE INTO DOCUMENT
-			long startParseAndNormalize = new Date().getTime();
 			combinedDoc = combinationBuilder.parse(unzippedFiles[0]);
 			combinedDoc.getDocumentElement().normalize();
-			long endParseAndNormalize = new Date().getTime();
-			System.out.println("Time to parse and normalize file(s): " + (endParseAndNormalize - startParseAndNormalize)/1000 + "s.");
-			
+
 		} catch (Exception e) {
 			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
 		} 
 		
-		long startMergeXMLLoop = new Date().getTime();
 		int unzippedFileInd = 1;
-		fileSize = unzippedFiles[0].length();
 		while (unzippedFileInd < unzippedFiles.length) { // loop through all but first unzipped file in array and add them to the first file
-			fileSize += unzippedFiles[unzippedFileInd].length();
 			Document mergeDoc = combinationBuilder.parse(unzippedFiles[unzippedFileInd]);
 			NodeList docToMerge = mergeDoc.getElementsByTagName("PubmedArticle");  // get PubmedArticles of XML file being merged in
 			for (int i=0; i<docToMerge.getLength(); i++) {  // loop through Pubmed Articles being added and add them to first file 
@@ -169,12 +161,56 @@ public class Combiner {
 						
 			unzippedFileInd++;
 		}
-		long endMergeXMLLoop = new Date().getTime();
 		
-		System.out.println("Time to go through mergeXML loop: " + (endMergeXMLLoop - startMergeXMLLoop)/1000 + "s.");
+		
+		saveXMLFile(combinedDoc);
+		
 		return combinedDoc;
 		
 				
+	}
+	
+	/**
+	 * Saves xml files
+	 * @param Document combinedDoc - document to save
+	 * @return boolean of whether file saved successfully
+	 * @throws TransformerConfigurationException 
+	 * @throws IOException
+	 * @throws TransformerException
+	 */
+	private boolean saveXMLFile(Document combinedDoc) throws TransformerConfigurationException {
+		// SAVE XML FILE
+		// Create File and FileWriter for new, combined file
+		boolean saveSuccessful = false;
+		FileWriter writer;
+		try {
+			writer = new FileWriter(new File("\\Users\\Jamie\\eclipse-workspace-2020\\FinalProjectSpring\\data\\pubmeddata.xml"));
+			StreamResult result = new StreamResult(writer);
+		
+			// INSTANTIATE TRANSFORMER TO CONVERT DOCUMENT WITH COMBINED XML INTO A NEW XML FILE
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer = factory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");  // for formatting
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); // for formatting
+			
+			DOMSource source = new DOMSource(combinedDoc);
+			
+			try {
+				transformer.transform(source, result);
+				saveSuccessful = true;
+			} catch (TransformerException e) {
+				engine.getLogger().writeToErrorLog(e.toString());
+				e.printStackTrace();
+			}
+		
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		
+
+		
+		return saveSuccessful;
 	}
 	
 	
@@ -182,8 +218,5 @@ public class Combiner {
 		return this.combinedXML;
 	}
 
-	public long getFileSize() {
-		return this.fileSize;
-	}
 	
 }

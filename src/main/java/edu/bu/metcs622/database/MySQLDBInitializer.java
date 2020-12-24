@@ -19,15 +19,36 @@ public class MySQLDBInitializer {
 	private String tableName = "";
 	private Engine engine;
 
+	
 	/**
 	 * Constructor initializes connection with database
+	 */
+	public MySQLDBInitializer(Engine engine) {
+		this.engine = engine;
+		this.tableName = "pubmeddata";
+		try {
+			// connect to database with password user supplied
+			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS);
+			
+			// create database if doesn't exist
+			stmt = con.createStatement();
+			
+		} catch (SQLException e1) {
+			// password or database location is invalid
+			engine.getLogger().writeToErrorLog(e1.toString());
+			System.out.println("Cannot connect to MYSQL. Will proceed with only MongoDB.");		
+		}
+	}
+	
+	/**
+	 * Constructor initializes connection with database to provision data
 	 */
 	public MySQLDBInitializer(Engine engine, String files) {
 		this.engine = engine;
 		this.tableName = files;
 		try {
 			// connect to database with password user supplied
-			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS,Constants.MYSQL_USERNAME,Constants.MYSQL_PWD);
+			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS);
 			
 			// create database if doesn't exist
 			stmt = con.createStatement();
@@ -43,6 +64,7 @@ public class MySQLDBInitializer {
 			
 		} catch (SQLException e1) {
 			// password or database location is invalid
+			e1.printStackTrace();
 			System.out.println("Cannot connect to MYSQL. Will proceed with only MongoDB.");
 			
 		}

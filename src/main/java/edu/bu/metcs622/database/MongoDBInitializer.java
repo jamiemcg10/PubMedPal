@@ -13,9 +13,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import edu.bu.metcs622.main.Constants;
 import edu.bu.metcs622.scandata.Engine;
-
-
+import com.mongodb.MongoClientURI;
 
 /**
  * Initializes connection with MongoDB and provides methods for searching database by keyword and date
@@ -25,13 +25,41 @@ public class MongoDBInitializer {
 	private MongoDatabase dbObj;
 	private MongoCollection<Document> col = null;
 	
+	
+	/**
+	 * Constructor. Initializes connection with collection
+	 * @param db
+	 */
+	public MongoDBInitializer(Engine engine) {
+		try {
+			
+			MongoClientURI uri = new MongoClientURI(
+			    Constants.MONGODB_ADDRESS);
+			
+			this.mongoClient  = new MongoClient(uri);
+
+			this.dbObj = mongoClient.getDatabase("PubMedPal");
+			this.col = dbObj.getCollection("pubmeddata");		
+		} catch (Exception e) {
+			engine.getLogger().writeToErrorLog(e.toString());
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
 	/**
 	 * Constructor. Initializes connection with collection and drops data currently in collection
 	 * @param db
 	 */
 	public MongoDBInitializer(Engine engine, String db) {
 		try {
-			this.mongoClient = new MongoClient();  
+			
+			MongoClientURI uri = new MongoClientURI(
+			    Constants.MONGODB_ADDRESS);
+			
+			this.mongoClient  = new MongoClient(uri);
+
 			this.dbObj = mongoClient.getDatabase("PubMedPal");
 			this.col = dbObj.getCollection(db);		
 		} catch (Exception e) {

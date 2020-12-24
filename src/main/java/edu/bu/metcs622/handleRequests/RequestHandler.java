@@ -246,7 +246,7 @@ public class RequestHandler {
 		} else { // try to match to 2 digit year
 			Pattern yearPattern2 = Pattern.compile("([0-9][0-9])");
 			Matcher m2 = yearPattern2.matcher(rawDate);
-			if (m2.find()) {  // 2 digit year foudn
+			if (m2.find()) {  // 2 digit year found
 				cleanDate = m2.group();
 				if (Integer.parseInt(cleanDate) >= 30) {  // add millenium to year
 					cleanDate = "19"+cleanDate;

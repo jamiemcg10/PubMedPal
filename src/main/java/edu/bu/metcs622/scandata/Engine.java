@@ -1,16 +1,23 @@
 package edu.bu.metcs622.scandata;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import edu.bu.metcs622.database.DatastoreBuilder;
+import edu.bu.metcs622.database.DatastoreConnection;
 import edu.bu.metcs622.database.MongoDBInitializer;
 import edu.bu.metcs622.database.MySQLDBInitializer;
 import edu.bu.metcs622.lucene.LuceneSearcher;
@@ -45,23 +52,33 @@ public class Engine {
 	 * @throws ParseException
 	 * @throws SQLException
 	 */
-	public void start(String files) throws IOException, ParserConfigurationException, SAXException, TransformerConfigurationException, ParseException, SQLException{
+	public void start(){
 		//initialize everything
 		try {
 			System.out.println("Starting engine...");
 			
 			// retrieve an xml document
-			Combiner combine = new Combiner(this, files);
-			Document combinedXML = combine.getCombinedXML();
-			fileSize = combine.getFileSize();
+			File file = new File("\\Users\\Jamie\\eclipse-workspace-2020\\FinalProjectSpring\\data\\pubmeddata.xml");
+			fileSize = file.length();
+			StreamSource source = new StreamSource(new FileInputStream(file));
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer = factory.newTransformer();
+			DOMResult result = new DOMResult();
+			try {
+				transformer.transform(source, result);
+			} catch (TransformerException e) {
+				e.printStackTrace();
+			}
+			
+			Document combinedXML = (Document) result.getNode();
 			
 			if (combinedXML != null) {
 				// there is a document - add it to databases, lucene index, and brute force searcher
-				DatastoreBuilder dbBuilder = new DatastoreBuilder(this, files, combinedXML);
-				setMysql(dbBuilder.getMysql());
-				setMongodb(dbBuilder.getMongoDb());
-				setLucene(dbBuilder.getLucene());
-				setBfSearch(dbBuilder.getBfSearch());
+				DatastoreConnection dsConnection = new DatastoreConnection(this, combinedXML);
+				setMysql(dsConnection.getMysql());
+				setMongodb(dsConnection.getMongoDb());
+				setLucene(dsConnection.getLucene());
+				setBfSearch(dsConnection.getBfSearch());
 				history = new SearchHistory();  // initialize search history
 				System.out.println("Everything is set up!");
 				
@@ -76,19 +93,10 @@ public class Engine {
 		} catch (IOException e1) {
 			logger.writeToErrorLog(e1.toString());
 			e1.printStackTrace();
-		} catch (ParserConfigurationException e1) {
-			logger.writeToErrorLog(e1.toString());
-			e1.printStackTrace();
-		} catch (SAXException e1) {
-			logger.writeToErrorLog(e1.toString());
-			e1.printStackTrace();
 		} catch (ParseException e1) {
 			logger.writeToErrorLog(e1.toString());
 			e1.printStackTrace();
-		} catch (SQLException e1) {
-			logger.writeToErrorLog(e1.toString());
-			e1.printStackTrace();
-		}
+		} 
 				
 	}
 

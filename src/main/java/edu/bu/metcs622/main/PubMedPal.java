@@ -40,8 +40,13 @@ public class PubMedPal {
 	// displays main page
 	@GetMapping({"/", "/index.html"})
 	public String index() {
+		engine = new Engine();
+		engine.start();
+		// make sure engine is set up to work
+		
 		System.out.println("PubMed Pal launched!");
 		return "index";
+		
 	}
 	
 	
@@ -79,24 +84,7 @@ public class PubMedPal {
 			return response;
 		}
 	
-	/**
-	 * Takes files user specified and builds and runs the engine
-	 * @param files
-	 * @return "response"
-	 */
-	@PostMapping("/api/initialize")
-	@ResponseBody
-		public String buildDataStores(@RequestBody String files) {
-			engine = new Engine();
-			
-			try {
-				engine.start(files);
-			} catch (Exception e) {
-				engine.getLogger().writeToErrorLog(e.toString());
-				e.printStackTrace();
-			} 
-			return "response";
-	}
+
 	
 	/**
 	 * Closes connection to SQL database, lucene index, and log files

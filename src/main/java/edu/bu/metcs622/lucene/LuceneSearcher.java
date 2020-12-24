@@ -38,6 +38,21 @@ public class LuceneSearcher {
 	
 	
 	/**
+	 * Initialize lucene index writer for app
+	 */
+	public LuceneSearcher(Engine engine) throws ParseException {
+		this.indexName = "pubmeddata";
+		this.engine = engine;
+		try {
+			index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
+		} catch (IOException e) {
+			engine.getLogger().writeToErrorLog(e.toString());
+			e.printStackTrace();
+		}
+	} // end constructor
+	
+	
+	/**
 	 * Initialize lucene index writer
 	 */
 	public LuceneSearcher(Engine engine, String fileName) throws ParseException {

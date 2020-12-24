@@ -85,7 +85,7 @@
 			<version>1.0</version>
 			<systemPath>${basedir}\lib\mongo-java-driver-3.4.3.jar</systemPath>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>mysql-connector-java-8.0.16</groupId>
 			<artifactId>mysql-connector-java-8.0.16</artifactId>
 			<scope>system</scope>

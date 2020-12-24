@@ -45,27 +45,6 @@
             width: 50px;
             height: 25px;
         }
-        #file-select{
-            width: 55%;
-        }
-        #file-selector{
-            z-index: 120;
-            width: 40vw;
-            height: 30vh;
-            background-color: whitesmoke;
-            position: absolute;
-            top: 30vh;
-            left: 30vw;
-            border-radius: 10px;
-            padding: 15px;
-        }
-        #file-selector[loading="true"]:hover{
-            cursor: wait;
-        }
-
-        #file-selector[loading="true"] *:hover{
-            cursor: wait;
-        }
 
         body[loading="true"]:hover{
             cursor: wait;
@@ -129,15 +108,6 @@
         option {
             padding: 2px;
         }
-        .overlay{
-            width: 100%;
-            height: 101.5vh;
-            background-color: rgba(155,155,155,.75);
-            position: absolute;
-            z-index: 10;
-            top: 0;
-            margin-top: -10px;
-        }
         #send-btn{
             padding: 0px 10px;
             color: rgb(35,35,35);
@@ -197,9 +167,30 @@
                         }
             }
                     
-                const observer = new MutationObserver(callback);  // create Mutation observer to listen for changes to DOM
-                observer.observe(ele, config); // start MutationObserver
+            const observer = new MutationObserver(callback);  // create Mutation observer to listen for changes to DOM
+            observer.observe(ele, config); // start MutationObserver
                                 
+            startBot();
+
+            $('#send-btn').click(()=>{
+                if (messageBox.value != ""){ // do nothing if message is empty
+                    let method = 0;
+                    let searchRequest = messageBox.value;
+                    botui.message.human({  // show message
+                        content: messageBox.value
+                    }).then(()=>{   // handle message
+                        if (searchRequest.toLowerCase().includes("thank you") || searchRequest.toLowerCase().includes("thanks") ){
+                            messageBox.value = "";
+                            botui.message.bot({
+                                content: "You're welcome!"
+                            });
+                        } else {                 
+                            sendParseRequestToServer(searchRequest);  // figure out what message means
+                        }
+                        
+                    });
+                }
+            });
 
             function startBot(){ 
                 botui.message.bot({  // show greeting message
@@ -213,27 +204,6 @@
                 });
                 $('#message').focus();
             }
-
-            $('#send-btn').click(()=>{
-                if (messageBox.value != ""){ // do nothing if message is empty
-                    let method = 0;
-                    let searchRequest = messageBox.value;
-                    botui.message.human({  // show message
-                        content: messageBox.value
-                    }).then(()=>{   // handle message
-                        if (searchRequest.toLowerCase().includes("thank you") || searchRequest.toLowerCase().includes("thanks") ){
-                            messageBox.value = "";
-                            botui.message.bot({
-                                content: "You're welcome!"
-                                // TODO: ask if they need anything else?
-                            });
-                        } else {                 
-                            sendParseRequestToServer(searchRequest);  // figure out what message means
-                        }
-                        
-                    });
-                }
-            });
 
             function sendParseRequestToServer(searchRequest){
                 botui.message.bot({
@@ -367,46 +337,6 @@
                 });
             }
 
-            $('#send-files').click((event)=>{
-                let numFiles = $('#file-select').val().length;
-                let files = $('#file-select').val();
-
-                if (numFiles === 0){  // no files were selected - do nothing
-                    event.preventDefault();
-                }
-                $('body').attr("loading","true");
-                
-                let filesToOpen = "";
-                for (let i=0; i<numFiles; i++){
-                    if (i > 0){
-                        filesToOpen += ",";
-                    } 
-
-                    filesToOpen += files[i];
-                }
-                // send files to server/database
-                $.ajax({
-                    url: '/api/initialize', 
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: filesToOpen,
-                    success: function(data, textStatus, jqXHR){ 
-                        $('#file-selector').hide();
-                        $('.overlay').hide();
-                        $('body').attr("loading","false");
-                        startBot();
-                        
-                    },
-                    error: function(jqXHR, textStatus, errorThrown){ 
-                        // should probably show an error message
-                        // console.log(jqXHR);
-                        // console.log(textStatus); // error
-                        // console.log(errorThrown);
-                    }
-                });
-
-            });
-
             $('#message').on("keydown", (event)=>{ // send message if user hits Enter key
                 if (event.code === "Enter"){
                  $('#send-btn').click();   
@@ -442,20 +372,6 @@
     </script>
 </head>
 <body>
-    <div id="file-selector">
-        <p>Choose datasets to use</p>
-        <select multiple id="file-select">
-            <!--add more options if more files are added-->
-            <option value="pubmed20n1016">pubmed20n1016</option>
-            <option value="pubmed20n1020">pubmed20n1020</option>
-            <option value="pubmed20n1032">pubmed20n1032</option>
-            <option value="pubmed20n1151">pubmed20n1151</option>
-            <option value="pubmed20n1169">pubmed20n1169</option>
-            <option value="pubmed20n1408">pubmed20n1408</option>
-        </select>       
-        <button id="send-files">OK</button>
-        </div>
-    <div class="overlay"></div>
     <h1>PubMed Pal</h1>
     <div id="my-botui-app">
         <bot-ui></botui>
