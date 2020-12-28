@@ -20,7 +20,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
-import edu.bu.metcs622.main.Constants;
+////import edu.bu.metcs622.main.Constants;
 import edu.bu.metcs622.scandata.Engine;
 
 

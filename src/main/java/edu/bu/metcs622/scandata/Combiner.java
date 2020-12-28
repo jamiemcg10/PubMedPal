@@ -26,7 +26,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import edu.bu.metcs622.main.Constants;
+////import edu.bu.metcs622.main.Constants;
 
 /**
  * Given a list of files to combine, unzips them and combines them into a single Document
@@ -83,7 +83,7 @@ public class Combiner {
 		byte[] buffer = new byte[1024];
 		
 		for (int i=0; i<inputFiles.length; i++) { // loop through .gz files
-			unzippedFiles[i] = new File(Constants.DATA_LOCATION + inputFiles[i].getName().replace(".gz",""));
+////			unzippedFiles[i] = new File(Constants.DATA_LOCATION + inputFiles[i].getName().replace(".gz",""));
 			FileOutputStream individualFile = new FileOutputStream(unzippedFiles[i]);  // create new file for unzipped file
 			GZIPInputStream zipFileInput = new GZIPInputStream(new FileInputStream(inputFiles[i]));  // open inputstream for zipped file
 			int bytesRead;
