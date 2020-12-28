@@ -8,6 +8,9 @@ pubmed20n1016.xml
 /data/*.gz
 /report
 !/data/pubmeddata.xml
+/lib
+error_log.txt
+search_log.csv
 
 
 HELP.md

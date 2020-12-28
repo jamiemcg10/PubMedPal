@@ -6,6 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
 
+import edu.bu.metcs622.bucketaccess.GetS3Object;
+import edu.bu.metcs622.bucketaccess.PutS3Object;
+
 /**
  * Class to log search results and errors to file
  *
@@ -21,34 +24,65 @@ public class Logger {
 	 * Constructor to initialize log files
 	 */
 	public Logger(){
-		searchLog = new File(Constants.SEARCH_LOG_LOCATION);
-		errorLog = new File(Constants.ERROR_LOG_LOCATION);
-				
+	  	System.setProperty("aws.accessKeyId", Constants.ACCESS_KEY_ID); 
+	  	System.setProperty("aws.secretAccessKey", Constants.SECRET_ACCESS_KEY);
+	  	
+//		searchLog = new File(Constants.SEARCH_LOG_LOCATION);
+//		errorLog = new File(Constants.ERROR_LOG_LOCATION);
+	  	
+	  	searchLog = GetS3Object.getFile("search_log.csv");
+	  	errorLog = GetS3Object.getFile("error_log.txt");
+
 		
 		try {
-			errorLog.createNewFile();
+//			errorLog.createNewFile();
+		  	if (errorLog.length() == 0) {
+		  		// file doesn't exist on AWS
+		  		System.out.println("Error log doesn't exist on AWS");
+				try {
+					errorLog = new File(".//error_log.txt");
+					errorLog.createNewFile();
+					PutS3Object.writeFile(errorLog, "error_log.txt");
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		  	}
 			errorLogWriter = new BufferedWriter(new FileWriter(errorLog, true));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		try {
-			
-			if (searchLog.createNewFile()) {
-				System.out.println("Search log doesn't exist");
-				searchLogWriter = new BufferedWriter(new FileWriter(searchLog));
-				searchLogWriter.write("Date,File size (KB),Type,Method,Term,Time (ms.)\n");
-				searchLogWriter.flush();
-			} else {
-				searchLogWriter = new BufferedWriter(new FileWriter(searchLog, true));
-			}
+//			if (searchLog.createNewFile()) {
+//				System.out.println("Search log doesn't exist");
+//				searchLogWriter = new BufferedWriter(new FileWriter(searchLog));
+//				searchLogWriter.write("Date,File size (KB),Type,Method,Term,Time (ms.)\n");
+//				searchLogWriter.flush();
+//			} else {
+		  	if (searchLog.length() == 0) {
+		  		// file doesn't exist on AWS
+		  		System.out.println("Search log doesn't exist on AWS");
+				try {
+					searchLog = new File(".//search_log.csv");
+					searchLog.createNewFile();
+					searchLogWriter = new BufferedWriter(new FileWriter(searchLog));
+					searchLogWriter.write("Date,File size (KB),Type,Method,Term,Time (ms.)\n");
+					searchLogWriter.flush();
+					PutS3Object.writeFile(searchLog, "search_log.csv");
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		  	}
+			searchLogWriter = new BufferedWriter(new FileWriter(searchLog, true));
+//			}
 		} catch (IOException e) {
 			writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
 		
 
-		
 		System.out.println("Logs initialized");
 	}
 	
@@ -65,13 +99,18 @@ public class Logger {
 		boolean successful = false;
 		
 		try {
+			searchLog = GetS3Object.getFile("search_log.csv");
+			searchLogWriter = new BufferedWriter(new FileWriter(searchLog, true));
 			searchLogWriter.write(new Date().toString() + "," + fileSize/1000 + "," + type + "," + method + "," + term + ","+ time + "\n");
 			searchLogWriter.flush();
+			PutS3Object.writeFile(searchLog, "search_log.csv");
+			
 			successful = true;
 		} catch (IOException e) {
 			writeToErrorLog(e.toString());
 			e.printStackTrace();
 		}
+		
 		
 		return successful;
 	}
@@ -84,9 +123,14 @@ public class Logger {
 	public boolean writeToErrorLog(String error) {
 		boolean successful = false;
 		
+
 		try {
+			errorLog = GetS3Object.getFile("error_log.txt");
+			errorLogWriter = new BufferedWriter(new FileWriter(errorLog, true));
 			errorLogWriter.write(new Date().toString()+"\n"+error+"\n");
 			errorLogWriter.flush();
+			PutS3Object.writeFile(errorLog, "error_log.txt");
+			
 			successful = true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -108,6 +152,9 @@ public class Logger {
 		} catch (IOException e) {
 			writeToErrorLog(e.toString());
 			e.printStackTrace();
+		} catch (Exception e) {
+			writeToErrorLog(e.toString());
+			e.printStackTrace();
 		}
 		
 		return successful;
@@ -124,6 +171,8 @@ public class Logger {
 			errorLogWriter.close();
 			successful = true;
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
