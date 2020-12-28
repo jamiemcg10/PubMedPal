@@ -19,8 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import edu.bu.metcs622.main.Constants;
-
 public class PutS3Object {
 	static BufferedWriter searchLogWriter;
 

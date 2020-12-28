@@ -44,7 +44,8 @@ public class LuceneSearcher {
 		this.indexName = "pubmeddata";
 		this.engine = engine;
 		try {
-			index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
+//			index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
+			index = FSDirectory.open(Paths.get(System.getenv("LUCENE_LOCATION")+indexName));
 		} catch (IOException e) {
 			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
@@ -71,7 +72,8 @@ public class LuceneSearcher {
 	// open index and delete all entries so it can be recreated
 	private IndexWriter initializeLucene() throws IOException, ParseException {
 		analyzer = new StandardAnalyzer();
-		index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
+//		index = FSDirectory.open(Paths.get(Constants.LUCENE_LOCATION+indexName));
+		index = FSDirectory.open(Paths.get(System.getenv("LUCENE_LOCATION")+indexName));
 		IndexWriterConfig config = new IndexWriterConfig(analyzer);
 		IndexWriter w = new IndexWriter(index, config);
 		

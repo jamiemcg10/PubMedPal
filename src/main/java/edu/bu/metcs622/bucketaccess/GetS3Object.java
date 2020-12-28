@@ -19,8 +19,6 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
-import edu.bu.metcs622.main.Constants;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

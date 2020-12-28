@@ -24,8 +24,12 @@ public class Logger {
 	 * Constructor to initialize log files
 	 */
 	public Logger(){
-	  	System.setProperty("aws.accessKeyId", Constants.ACCESS_KEY_ID); 
-	  	System.setProperty("aws.secretAccessKey", Constants.SECRET_ACCESS_KEY);
+		
+//	  	System.setProperty("aws.accessKeyId", Constants.ACCESS_KEY_ID); 
+//	  	System.setProperty("aws.secretAccessKey", Constants.SECRET_ACCESS_KEY);
+		
+	  	System.setProperty("aws.accessKeyId", System.getenv("ACCESS_KEY_ID")); 
+	  	System.setProperty("aws.secretAccessKey", System.getenv("SECRET_ACCESS_KEY"));
 	  	
 //		searchLog = new File(Constants.SEARCH_LOG_LOCATION);
 //		errorLog = new File(Constants.ERROR_LOG_LOCATION);

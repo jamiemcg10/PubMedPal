@@ -28,8 +28,9 @@ public class MySQLDBInitializer {
 		this.tableName = "pubmeddata";
 		try {
 			// connect to database with password user supplied
-			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS);
-			
+//			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS);			
+			con = DriverManager.getConnection(System.getenv("MYSQL_ADDRESS"));
+
 			// create database if doesn't exist
 			stmt = con.createStatement();
 			
@@ -48,7 +49,8 @@ public class MySQLDBInitializer {
 		this.tableName = files;
 		try {
 			// connect to database with password user supplied
-			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS);
+//			con = DriverManager.getConnection(Constants.MYSQL_ADDRESS);
+			con = DriverManager.getConnection(System.getenv("MYSQL_ADDRESS"));
 			
 			// create database if doesn't exist
 			stmt = con.createStatement();

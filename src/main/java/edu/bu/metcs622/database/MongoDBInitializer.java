@@ -33,9 +33,9 @@ public class MongoDBInitializer {
 	public MongoDBInitializer(Engine engine) {
 		try {
 			
-			MongoClientURI uri = new MongoClientURI(
-			    Constants.MONGODB_ADDRESS);
-			
+//			MongoClientURI uri = new MongoClientURI(Constants.MONGODB_ADDRESS);
+			MongoClientURI uri = new MongoClientURI(System.getenv("MONGODB_ADDRESS"));
+
 			this.mongoClient  = new MongoClient(uri);
 
 			this.dbObj = mongoClient.getDatabase("PubMedPal");
@@ -55,8 +55,8 @@ public class MongoDBInitializer {
 	public MongoDBInitializer(Engine engine, String db) {
 		try {
 			
-			MongoClientURI uri = new MongoClientURI(
-			    Constants.MONGODB_ADDRESS);
+//			MongoClientURI uri = new MongoClientURI(Constants.MONGODB_ADDRESS);
+			MongoClientURI uri = new MongoClientURI(System.getenv("MONGODB_ADDRESS"));
 			
 			this.mongoClient  = new MongoClient(uri);
 

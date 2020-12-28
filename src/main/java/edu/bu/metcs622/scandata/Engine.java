@@ -58,7 +58,8 @@ public class Engine {
 			System.out.println("Starting engine...");
 			
 			// retrieve an xml document
-			File file = new File("\\Users\\Jamie\\eclipse-workspace-2020\\FinalProjectSpring\\data\\pubmeddata.xml");
+//			File file = new File("\\Users\\Jamie\\eclipse-workspace-2020\\FinalProjectSpring\\data\\pubmeddata.xml");
+			File file = new File(System.getenv("DATA_LOCATION")+"\\pubmeddata.xml");
 			fileSize = file.length();
 			StreamSource source = new StreamSource(new FileInputStream(file));
 			TransformerFactory factory = TransformerFactory.newInstance();
