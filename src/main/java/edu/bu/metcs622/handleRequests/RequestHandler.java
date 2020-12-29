@@ -331,7 +331,7 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getMongodb().countKeywordsMongoDB(term);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Get the number of results for " + originalTerm + "from MongoDB ";
+						searchDescription = "Get the number of results for " + originalTerm + " from MongoDB ";
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getMongodb().keywordSearchMongoDB(term);
@@ -348,7 +348,7 @@ public class RequestHandler {
 						searchStartTime = new Date().getTime();
 						results = engine.getMysql().countKeywordsMYSQL(term);
 						searchEndTime = new Date().getTime();
-						searchDescription = "Get the number of results for " + originalTerm + "from MySQL ";
+						searchDescription = "Get the number of results for " + originalTerm + " from MySQL ";
 					} else { // search for article titles
 						searchStartTime = new Date().getTime();
 						results = engine.getMysql().keywordSearchMYSQL(term);

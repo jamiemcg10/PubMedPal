@@ -50,7 +50,7 @@ $(()=>{ // when document has loaded
                 } else if (searchRequest.toLowerCase() === "help" || searchRequest.toLowerCase() === "help me" || searchRequest.toLowerCase().includes("what can you do") || searchRequest.toLowerCase() === "commands") {
                     messageBox.value = "";
                     botui.message.bot({
-                        content: "You can say things like \"Search for cancer\", \"Show me articles about obesity\", or \"How many articles about leukemia are there?\""
+                        content: "You can say things like \"Search for articles on cancer\", \"Show me articles about obesity after 2018\", \"How many articles about leukemia are there?\", or \"I want to see my search history\""
                     });
                 } else {                 
                     sendParseRequestToServer(searchRequest);  // figure out what message means
