@@ -5,7 +5,9 @@ December 2020
 <br/>
 
 # ![Logo](./src/main/resources/static/favicon/favicon.ico) PubMed Pal
+www.pubmedpal.com
 
+<br/> 
 This program allows a user to search PubMed data by interacting with a chatbot.  
 
 Examples of messages the chatbot will respond to are, \"Search for articles on cancer\", \"Show me articles about obesity after 2018\", \"How many articles about leukemia are there?\", and \"I want to see my search history.\"
