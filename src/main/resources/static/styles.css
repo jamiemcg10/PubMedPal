@@ -37,11 +37,11 @@ body[loading="true"] *:hover{
     cursor: wait;
 }
 
-#file-selector p{
+/* #file-selector p{
     margin-bottom: 20px;
     font-family: arial, sans-serif;
     font-weight: bold;
-}
+} */
 h1{
     padding-left: 200px;
     position: fixed;
