@@ -47,6 +47,11 @@ $(()=>{ // when document has loaded
                     botui.message.bot({
                         content: "You're welcome!"
                     });
+                } else if (searchRequest.toLowerCase() === "help" || searchRequest.toLowerCase() === "help me" || searchRequest.toLowerCase().includes("what can you do") || searchRequest.toLowerCase() === "commands") {
+                    messageBox.value = "";
+                    botui.message.bot({
+                        content: "You can say things like \"Search for cancer\", \"Show me articles about obesity\", or \"How many articles about leukemia are there?\""
+                    });
                 } else {                 
                     sendParseRequestToServer(searchRequest);  // figure out what message means
                 }
