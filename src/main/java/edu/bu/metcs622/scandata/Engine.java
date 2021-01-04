@@ -61,6 +61,7 @@ public class Engine {
 //			File file = new File("\\Users\\Jamie\\eclipse-workspace-2020\\FinalProjectSpring\\data\\pubmeddata.xml");
 			File file = new File(System.getenv("DATA_LOCATION")+"pubmeddata.xml");
 			fileSize = file.length();
+			System.out.format("XML size: %i", fileSize);
 			StreamSource source = new StreamSource(new FileInputStream(file));
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer = factory.newTransformer();
@@ -77,9 +78,13 @@ public class Engine {
 				// there is a document - add it to databases, lucene index, and brute force searcher
 				DatastoreConnection dsConnection = new DatastoreConnection(this, combinedXML);
 				setMysql(dsConnection.getMysql());
+				System.out.println("MySQL initialized");
 				setMongodb(dsConnection.getMongoDb());
+				System.out.println("MongoDB initialized");
 				setLucene(dsConnection.getLucene());
+				System.out.println("Lucene initialized");
 				setBfSearch(dsConnection.getBfSearch());
+				System.out.println("Brute Force initialized");
 				history = new SearchHistory();  // initialize search history
 				System.out.println("Everything is set up!");
 				

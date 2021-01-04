@@ -19,6 +19,16 @@ public class Logger {
 	private BufferedWriter searchLogWriter;
 	private File errorLog;
 	private BufferedWriter errorLogWriter;
+	private boolean skipLogging = false;
+	
+	/**
+	 * Constructor to skip logging
+	 */
+	public Logger(boolean doNotInitialize){
+		if (doNotInitialize) {
+			this.skipLogging = true;
+		}
+	}
 	
 	/**
 	 * Constructor to initialize log files
@@ -35,14 +45,16 @@ public class Logger {
 //		errorLog = new File(Constants.ERROR_LOG_LOCATION);
 	  	
 	  	searchLog = GetS3Object.getFile("search_log.csv");
+	  	System.out.println("Search log");
 	  	errorLog = GetS3Object.getFile("error_log.txt");
+	  	System.out.println("Error log");
 
 		
 		try {
 //			errorLog.createNewFile();
 		  	if (errorLog.length() == 0) {
 		  		// file doesn't exist on AWS
-		  		System.out.println("Error log doesn't exist on AWS");
+		  		System.out.println("Error log doesn't exist on AWS or is empty");
 				try {
 					errorLog = new File(".//error_log.txt");
 					errorLog.createNewFile();
@@ -90,6 +102,9 @@ public class Logger {
 		System.out.println("Logs initialized");
 	}
 	
+	
+	
+	
 	/**
 	 * Appends search data to search log
 	 * @param type
@@ -101,6 +116,10 @@ public class Logger {
 	 */
 	public boolean writeToSearchLog(String type, long fileSize, String method, String term, long time) {
 		boolean successful = false;
+		
+		if (skipLogging) {
+			return successful;
+		}
 		
 		try {
 			searchLog = GetS3Object.getFile("search_log.csv");
@@ -127,6 +146,9 @@ public class Logger {
 	public boolean writeToErrorLog(String error) {
 		boolean successful = false;
 		
+		if (skipLogging) {
+			return successful;
+		}
 
 		try {
 			errorLog = GetS3Object.getFile("error_log.txt");
@@ -149,6 +171,11 @@ public class Logger {
 	 */
 	public boolean closeSearchLog() {
 		boolean successful = false;
+		
+		if (skipLogging) {
+			return successful;
+		}
+		
 		try {
 			searchLogWriter.flush();
 			searchLogWriter.close();
@@ -168,8 +195,13 @@ public class Logger {
 	 * Attempts to close error log
 	 * @return boolean of whether log was successfully closed
 	 */
-	public boolean closeErrorLog() {
+	public boolean closeErrorLog() {		
 		boolean successful = false;
+		
+		if (skipLogging) {
+			return successful;
+		}
+		
 		try {
 			errorLogWriter.flush();
 			errorLogWriter.close();
