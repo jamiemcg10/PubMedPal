@@ -38,7 +38,7 @@ public class Engine {
 	private long fileSize;
 
 	public Engine() {
-		logger = new Logger();
+		logger = new Logger(true);
 	}
 	
 	
