@@ -61,7 +61,7 @@ public class Engine {
 //			File file = new File("\\Users\\Jamie\\eclipse-workspace-2020\\FinalProjectSpring\\data\\pubmeddata.xml");
 			File file = new File(System.getenv("DATA_LOCATION")+"pubmeddata.xml");
 			fileSize = file.length();
-			System.out.format("XML size: %i", fileSize);
+			System.out.format("XML size: %d", fileSize);
 			StreamSource source = new StreamSource(new FileInputStream(file));
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer = factory.newTransformer();
