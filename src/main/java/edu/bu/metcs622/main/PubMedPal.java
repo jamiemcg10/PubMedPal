@@ -28,6 +28,7 @@ public class PubMedPal {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PubMedPal.class, args);
+		System.out.println("this is happening");
 	}
 	
 	// server running check route
@@ -40,6 +41,7 @@ public class PubMedPal {
 	// displays main page
 	@GetMapping({"/", "/index.html"})
 	public String index() {
+		closeResources(); // attempt to free memory
 		engine = new Engine();
 		engine.start();
 		// make sure engine is set up to work
