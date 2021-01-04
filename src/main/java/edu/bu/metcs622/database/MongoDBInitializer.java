@@ -6,6 +6,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.bson.Document;
 
@@ -40,6 +42,9 @@ public class MongoDBInitializer {
 
 			this.dbObj = mongoClient.getDatabase("PubMedPal");
 			this.col = dbObj.getCollection("pubmeddata");		
+			
+			Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
+			mongoLogger.setLevel(Level.WARNING);
 		} catch (Exception e) {
 			engine.getLogger().writeToErrorLog(e.toString());
 			e.printStackTrace();
