@@ -28,7 +28,6 @@ public class PubMedPal {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PubMedPal.class, args);
-		System.out.println("this is happening");
 	}
 	
 	// server running check route
